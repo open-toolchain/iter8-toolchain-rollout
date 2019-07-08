@@ -130,18 +130,6 @@ stages:
       # Checks the cluster is ready, has a namespace configured with access to the private
       # image registry (using an IBM Cloud API Key). It also configures Helm Tiller service to later perform a deploy with Helm.
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_predeploy_kubectl.sh")
-      # Provision Redis when missing
-      REDIS_MASTER=$( kubectl get deployments --namespace ${CLUSTER_NAMESPACE} -o json | jq -r '.items[].metadata | select (.name=="redis-master") | .name ' )
-      if [ -z "${REDIS_MASTER}" ]; then
-        kubectl apply -f redis-master-deployment.yaml --namespace ${CLUSTER_NAMESPACE}
-        kubectl apply -f redis-master-service.yaml --namespace ${CLUSTER_NAMESPACE}
-      fi
-      REDIS_SLAVE=$( kubectl get deployments --namespace ${CLUSTER_NAMESPACE} -o json | jq -r '.items[].metadata | select (.name=="redis-slave") | .name ' )
-      if [ -z "${REDIS_SLAVE}" ]; then
-        kubectl apply -f redis-slave-deployment.yaml --namespace ${CLUSTER_NAMESPACE}
-        kubectl apply -f redis-slave-service.yaml --namespace ${CLUSTER_NAMESPACE}
-      fi
-      # TODO - wait for redis initial provisioning
   - name: Check Istio config
     type: deployer
     target:

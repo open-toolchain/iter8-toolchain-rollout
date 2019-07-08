@@ -81,7 +81,7 @@ services:
           GIT_REPO: repo
           GIT_BRANCH: canary
           DOCKER_ROOT: .
-          DEPLOYMENT_FILE: deployment.yaml
+          DEPLOYMENT_FILE: kustomize/deployment.yaml
           CF_APP_NAME: '{{form.pipeline.parameters.app-name}}'
           REGISTRY_REGION_ID: '{{form.pipeline.parameters.registry-region}}'
           REGISTRY_NAMESPACE: '{{form.pipeline.parameters.registry-namespace}}'
