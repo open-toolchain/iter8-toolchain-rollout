@@ -14,7 +14,7 @@ Changes to the `canary` branch will be rolled out in parallel, leveraging istio 
 ![Icon](./.bluemix/toolchain.png)
 
 ### To get started, click this button:
-[![Create Toolchain](https://cloud.ibm.com/devops/graphics/create_toolchain_button.png)](https://cloud.ibm.com/devops/setup/deploy/?repository=https%3A//github.com/open-toolchain/canary-testing-istio-toolchain&env_id=ibm:yp:us-south)
+[![Create Toolchain](https://cloud.ibm.com/devops/graphics/create_toolchain_button.png)](https://cloud.ibm.com/devops/setup/deploy/?repository=https%3A//github.com/kalantar/canary-testing-istio-toolchain&env_id=ibm:yp:us-south)
 
 DISCLAIMER: This toolchain uses [Istio](https://istio.io/) 1.1, which requires more resources than available in IKS lite clusters, please ensure you target a standard cluster instead. 
 
