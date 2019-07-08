@@ -22,8 +22,9 @@ else
   echo "iter8 not found, installing iter8"
   # git clone https://github.ibm.com/istio-research/iter8.git
   # helm template install/kubernetes/helm/iter8-analytics --name iter8-analytics | kubectl apply  -f -
-  kubectl apply -f https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/iter8.yaml
+  kubectl apply -f https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/iter8.yaml
   kubectl apply -f https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/iter8-controller.yaml
+  kubectl apply -f https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/iter8-controller.yaml
 fi
 
 echo ""
