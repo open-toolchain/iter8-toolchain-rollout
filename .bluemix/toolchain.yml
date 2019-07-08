@@ -37,10 +37,10 @@ services:
       repo_name: 'reviews-{{timestamp}}'
       repo_url: >
         $env.type === 'link' ? 
-          $env.app_repo : 'https://github.com/open-toolchain/reviews'
+          $env.app_repo : 'https://github.com/kalantar/reviews'
       source_repo_url: >
         $env.type === 'fork' || $env.type === 'clone' ? 
-          $env.app_repo : 'https://github.com/open-toolchain/reviews'
+          $env.app_repo : 'https://github.com/kalantar/reviews'
       type: $env.type || 'clone'
       has_issues: true
   build_stable:
@@ -57,7 +57,7 @@ services:
           GIT_REPO: repo
           GIT_BRANCH: master
           DOCKER_ROOT: .
-          DEPLOYMENT_FILE: deployment.yaml
+          DEPLOYMENT_FILE: kustomize/deployment.yaml
           CF_APP_NAME: '{{form.pipeline.parameters.app-name}}'
           REGISTRY_REGION_ID: '{{form.pipeline.parameters.registry-region}}'
           REGISTRY_NAMESPACE: '{{form.pipeline.parameters.registry-namespace}}'
