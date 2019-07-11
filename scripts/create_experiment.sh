@@ -13,6 +13,7 @@
 # Input env variables from pipeline job
 echo "PIPELINE_KUBERNETES_CLUSTER_NAME=${PIPELINE_KUBERNETES_CLUSTER_NAME}"
 echo "CLUSTER_NAMESPACE=${CLUSTER_NAMESPACE}"
+echo "IMAGE_NAME=${IMAGE_NAME}"
 echo "IMAGE_TAG=${IMAGE_TAG}"
 echo "BASELINE_VERSION=${BASELINE_VERSION}"
 echo "CANARY_VERSION=${CANARY_VERSION}"
@@ -59,6 +60,7 @@ fi
 
 #WOW APP_NAME=$( cat ${DEPLOYMENT_FILE} | yq r - -j | jq -r '. | select(.kind=="Deployment") | if (.metadata.labels.app) then .metadata.labels.app else .metadata.name end' )
 NAME=$(yq read ${EXPERIMENT_TEMPLATE_FILE} metadata.name)
+echo $NAME
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} \
   metadata.name ${NAME}-$(echo ${IMAGE_NAME} | cut -d- -f1)
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} \
