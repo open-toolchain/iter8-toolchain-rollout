@@ -16,7 +16,6 @@ echo "CLUSTER_NAMESPACE=${CLUSTER_NAMESPACE}"
 echo "IMAGE_TAG=${IMAGE_TAG}"
 echo "BASELINE_VERSION=${BASELINE_VERSION}"
 echo "CANARY_VERSION=${CANARY_VERSION}"
-env
 
 if [ -z "${EXPERIMENT_TEMPLATE_FILE}" ]; then EXPERIMENT_TEMPLATE_FILE=iter8_experiment.yaml ; fi
 if [ ! -f ${EXPERIMENT_TEMPLATE_FILE} ]; then
@@ -61,7 +60,7 @@ fi
 #WOW APP_NAME=$( cat ${DEPLOYMENT_FILE} | yq r - -j | jq -r '. | select(.kind=="Deployment") | if (.metadata.labels.app) then .metadata.labels.app else .metadata.name end' )
 NAME=$(yq read ${EXPERIMENT_TEMPLATE_FILE} metadata.name)
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} \
-  metadata.name ${NAME}-${BUILD_NUMBER}
+  metadata.name ${NAME}-$(echo ${IMAGE_NAME} | cut -d- -f1)
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} \
   spec.targetService.baseline ${BASELINE_VERSION}
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} \
