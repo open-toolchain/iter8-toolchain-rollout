@@ -1,7 +1,7 @@
 #!/bin/bash
 # uncomment to debug the script
 # set -x
-# copy the script below into your app code repo (e.g. ./scripts/istio_check_install.sh) and 'source' it from your pipeline job
+# copy the script below into your app code repo (e.g. ./scripts/iter8_check_install.sh) and 'source' it from your pipeline job
 #    source ./scripts/iter8_check_install.sh
 # alternatively, you can source it from online script:
 #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/iter8_check_install.sh")
@@ -11,8 +11,6 @@
 # Check iter8 installation in target cluster
 
 # Input env variables from pipeline job
-echo "PIPELINE_KUBERNETES_CLUSTER_NAME=${PIPELINE_KUBERNETES_CLUSTER_NAME}"
-echo "DEFAULT_ISTIO_VERSION=${DEFAULT_ISTIO_VERSION}"
 
 ITER8_NAMESPACE=iter8
 echo "Checking iter8 configuration"
@@ -36,7 +34,7 @@ do
   NOT_READY=$(echo $DATA | jq '.items[].status | select(.containerStatuses!=null) | .containerStatuses[] | select(.ready==false and .state.terminated==null)')
   if [[ -z "$NOT_READY" ]]; then
     echo -e "All pods are ready:"
-    break # istio installation succeeded
+    break # iter8 installation succeeded
   fi
   echo -e "${ITERATION} : Deployment still pending..."
   echo -e "NOT_READY:${NOT_READY}"

@@ -145,12 +145,28 @@ stages:
 
       # Infer parallelel deployment configuration for canary app, using Git branch name
       echo -e "Updating $DEPLOYMENT_FILE to represent canary deployment: add label version, modify deployment name"
-      CANARY_DEPLOYMENT_FILE=canary-${DEPLOYMENT_FILE} # prefix original deployment file name
-      DEPLOYMENT_NAME=$( cat ${DEPLOYMENT_FILE} | yq r - -j | jq -r '. | select(.kind=="Deployment") | .metadata.name' ) # read deployment name
-      # Substitute deployment name and version label (yaml>json>substitute>yaml)
-      cat ${DEPLOYMENT_FILE} | yq r - -j | jq --arg l canary --arg n ${DEPLOYMENT_NAME}-canary '. | select(.kind=="Deployment") | .spec.template.metadata.labels.version = $l | .metadata.name = $n ' | yq r - > ${CANARY_DEPLOYMENT_FILE}
-      DEPLOYMENT_FILE=${CANARY_DEPLOYMENT_FILE} # replace original deployment file
+      #MK CANARY_DEPLOYMENT_FILE=canary-${DEPLOYMENT_FILE} # prefix original deployment file name
+      #MK DEPLOYMENT_NAME=$( cat ${DEPLOYMENT_FILE} | yq r - -j | jq -r '. | select(.kind=="Deployment") | .metadata.name' ) # read deployment name
+      #MK # Substitute deployment name and version label (yaml>json>substitute>yaml)
+      #MK cat ${DEPLOYMENT_FILE} | yq r - -j | jq --arg l canary --arg n ${DEPLOYMENT_NAME}-canary '. | select(.kind=="Deployment") | .spec.template.metadata.labels.version = $l | .metadata.name = $n ' | yq r - > ${CANARY_DEPLOYMENT_FILE}
+      #MK DEPLOYMENT_FILE=${CANARY_DEPLOYMENT_FILE} # replace original deployment file
+      #MK cat ${DEPLOYMENT_FILE}
+
+      opsys=linux  # or darwin, or windows
+      curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest |\
+        grep browser_download |\
+        grep $opsys |\
+        cut -d '"' -f 4 |\
+        xargs curl -O -L
+      mv kustomize_*_${opsys}_amd64 kustomize
+      chmod u+x kustomize
+
+      DEPLOYMENT_FILE=foo.yaml
+      sed -i bak -e "s#VERSION#${IMAGE_TAG}#g" kustomize/patch.yaml
+      cat kustomize/patch.yaml
+      kustomize build -o ${DEPLOYMENT_FILE}
       cat ${DEPLOYMENT_FILE}
+
       USE_ISTIO_GATEWAY=true
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/deploy_kubectl.sh")
 - name: CANARY 0% (EMERGENCY STOP)
@@ -191,6 +207,49 @@ stages:
       # Route all traffic to "stable" destination (using Istio)
       echo "Stop routing traffic to 'canary' destination"
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_virtualservice_stable.sh")
+
+
+- name: ITER8
+  inputs:
+  - type: job
+    stage: BUILD
+    job: Build Docker image
+  triggers:
+    - type: stage
+      enabled: false
+  properties:
+  - name: buildprops
+    value: build.properties
+    type: file
+  - name: CLUSTER_NAMESPACE
+    value: ${PROD_CLUSTER_NAMESPACE}
+    type: text
+  - name: VIRTUAL_SERVICE_FILE
+    value: virtualservice-test.yaml
+    type: text
+  jobs:
+  - name: Run iter8
+    type: deployer
+    target:
+      api_key: ${API_KEY}
+      region_id: ${PROD_REGION_ID}
+      resource_group: ${PROD_RESOURCE_GROUP}
+      kubernetes_cluster: ${PROD_CLUSTER_NAME}
+    script: |
+      #!/bin/bash
+      # uncomment to debug the script
+      # set -x
+      # copy the script below into your app code repo (e.g. ./scripts/create_experiment.sh) and 'source' it from your pipeline job
+      #    source ./scripts/create_experiment.sh
+      # alternatively, you can source it from online script:
+      #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/create_experiment.sh")
+
+      # Route a fraction of traffic to "canary" destination (CANARY_WEIGHT), and rest to "stable" destination (using Istio)
+      BASELINE_VERSION=abcdef
+      CANARY_VERSION=${IMAGE_TAG}
+      source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/create_experiment.sh")
+
+
 - name: CANARY DARK
   inputs:
   - type: job
