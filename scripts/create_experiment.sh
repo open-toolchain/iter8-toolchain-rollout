@@ -16,57 +16,22 @@ echo "CLUSTER_NAMESPACE=${CLUSTER_NAMESPACE}"
 echo "IMAGE_NAME=${IMAGE_NAME}"
 echo "IMAGE_TAG=${IMAGE_TAG}"
 echo "BASELINE_VERSION=${BASELINE_VERSION}"
-echo "CANARY_VERSION=${CANARY_VERSION}"
+echo "CANARY_DEPLOYMENT_NAME=${CANARY_DEPLOYMENT_NAME}"
 
 if [ -z "${EXPERIMENT_TEMPLATE_FILE}" ]; then EXPERIMENT_TEMPLATE_FILE=iter8_experiment.yaml ; fi
 if [ ! -f ${EXPERIMENT_TEMPLATE_FILE} ]; then
-  echo -e "Inferring experiment using Kubernetes deployment yaml file : ${DEPLOYMENT_FILE}"
-  if [ -z "${DEPLOYMENT_FILE}" ]; then DEPLOYMENT_FILE=deployment.yml ; fi
-  if [ ! -f ${DEPLOYMENT_FILE} ]; then
-      echo -e "${red}Kubernetes deployment file '${DEPLOYMENT_FILE}' not found${no_color}"
-      exit 1
-  fi
-  # read app name if present, if not default to deployment name
-  APP_NAME=$( cat ${DEPLOYMENT_FILE} | yq r - -j | jq -r '. | select(.kind=="Deployment") | if (.metadata.labels.app) then .metadata.labels.app else .metadata.name end' ) # read deployment name  
-  cat > ${EXPERIMENT_TEMPLATE_FILE} << EOF
-apiVersion: iter8.tools/v1alpha1
-kind: Experiment
-metadata:
-  name: reviews-12
-  labels:
-    app.kubernetes.io/name: reviews
-spec:
-  targetService:
-    name: reviews
-    apiVersion: v1
-    baseline: reviews-v2
-    candidate: reviews-v3
-  trafficControl:
-    strategy: check_and_increment
-    interval: 30s
-    trafficStepSize: 20
-    maxIterations: 8
-    maxTrafficPercentage: 80
-  analysis:
-    analyticsService: http://iter8-analytics.iter8
-    successCriteria:
-    - metricName: iter8_latency
-      toleranceType: threshold
-      tolerance: 0.2
-      sampleSize: 6
-EOF
-  #sed -e "s/\${DEPLOYMENT_NAME}/${DEPLOYMENT_NAME}/g" ${VIRTUAL_SERVICE_FILE}
+  echo -e "${red}iter8 experiment template '${EXPERIMENT_TEMPLATE_FILE}' not found${no_color}"
 fi
 
-#WOW APP_NAME=$( cat ${DEPLOYMENT_FILE} | yq r - -j | jq -r '. | select(.kind=="Deployment") | if (.metadata.labels.app) then .metadata.labels.app else .metadata.name end' )
+#WOW: APP_NAME=$( cat ${DEPLOYMENT_FILE} | yq r - -j | jq -r '. | select(.kind=="Deployment") | if (.metadata.labels.app) then .metadata.labels.app else .metadata.name end' )
 NAME=$(yq read ${EXPERIMENT_TEMPLATE_FILE} metadata.name)
 echo $NAME
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} \
-  metadata.name ${NAME}-$(echo ${IMAGE_NAME} | cut -d- -f1)
+  metadata.name ${NAME}-${BUILD_NUMBER}
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} \
   spec.targetService.baseline ${BASELINE_VERSION}
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} \
-  spec.targetService.candidate ${CANARY_VERSION}
+  spec.targetService.candidate ${CANARY_DEPLOYMENT_NAME}
 cat ${EXPERIMENT_TEMPLATE_FILE}
 
 kubectl --namespace ${CLUSTER_NAMESPACE} \
