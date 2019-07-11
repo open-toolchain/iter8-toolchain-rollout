@@ -61,12 +61,12 @@ fi
 #WOW APP_NAME=$( cat ${DEPLOYMENT_FILE} | yq r - -j | jq -r '. | select(.kind=="Deployment") | if (.metadata.labels.app) then .metadata.labels.app else .metadata.name end' )
 NAME=$(yq read ${EXPERIMENT_TEMPLATE_FILE} metadata.name)
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} \
-  metadata.name ${NAME}-$(echo {$IMAGE_TAG} | cut -d- -f1)
+  metadata.name ${NAME}-${BUILD_NUMBER}
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} \
   spec.targetService.baseline ${BASELINE_VERSION}
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} \
   spec.targetService.candidate ${CANARY_VERSION}
 cat ${EXPERIMENT_TEMPLATE_FILE}
 
-kubectl --namespace ${} \
+kubectl --namespace ${CLUSTER_NAMESPACE} \
   apply --filename ${EXPERIMENT_TEMPLATE_FILE}
