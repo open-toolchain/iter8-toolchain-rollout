@@ -158,18 +158,58 @@ stages:
         grep $opsys |\
         cut -d '"' -f 4 |\
         xargs curl -O -L
-      mv kustomize_*_${opsys}_amd64 kustomize
-      chmod u+x kustomize
+      mv kustomize_*_${opsys}_amd64 /usr/local/bin/kustomize
+      chmod u+x /usr/local/bin/kustomize
 
       DEPLOYMENT_FILE=foo.yaml
-      sed -i bak -e "s#VERSION#${IMAGE_TAG}#g" kustomize/patch.yaml
+      sed -i -e "s#iter8/reviews:istio-VERSION#$PIPELINE_IMAGE_URL#" kustomize/patch.yaml
+      sed -i -e "s#VERSION#${IMAGE_TAG}#g" kustomize/patch.yaml
       cat kustomize/patch.yaml
-      kustomize build -o ${DEPLOYMENT_FILE}
+      kustomize build kustomize -o ${DEPLOYMENT_FILE}
       cat ${DEPLOYMENT_FILE}
+      export CANARY_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)
 
       USE_ISTIO_GATEWAY=true
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/deploy_kubectl.sh")
-- name: CANARY 0% (EMERGENCY STOP)
+# - name: CANARY 0% (EMERGENCY STOP)
+#   inputs:
+#   - type: job
+#     stage: BUILD
+#     job: Build Docker image
+#   triggers:
+#     - type: stage
+#       enabled: false
+#   properties:
+#   - name: buildprops
+#     value: build.properties
+#     type: file
+#   - name: CLUSTER_NAMESPACE
+#     value: ${PROD_CLUSTER_NAMESPACE}
+#     type: text
+#   - name: VIRTUAL_SERVICE_FILE
+#     value: virtualservice-test.yaml
+#     type: text    
+#   jobs:
+#   - name: Stop canary traffic
+#     type: deployer
+#     target:
+#       api_key: ${API_KEY}
+#       region_id: ${PROD_REGION_ID}
+#       resource_group: ${PROD_RESOURCE_GROUP}
+#       kubernetes_cluster: ${PROD_CLUSTER_NAME}
+#     script: |
+#       #!/bin/bash
+#       # uncomment to debug the script
+#       # set -x
+#       # copy the script below into your app code repo (e.g. ./scripts/istio_virtualservice_stable.sh) and 'source' it from your pipeline job
+#       #    source ./scripts/istio_virtualservice_stable.sh
+#       # alternatively, you can source it from online script:
+#       #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_virtualservice_stable.sh")
+
+#       # Route all traffic to "stable" destination (using Istio)
+#       echo "Stop routing traffic to 'canary' destination"
+#       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_virtualservice_stable.sh")
+- name: START CANARY EXPERIMENT (VIA ITER8)
   inputs:
   - type: job
     stage: BUILD
@@ -184,48 +224,8 @@ stages:
   - name: CLUSTER_NAMESPACE
     value: ${PROD_CLUSTER_NAMESPACE}
     type: text
-  - name: VIRTUAL_SERVICE_FILE
-    value: virtualservice-test.yaml
-    type: text    
-  jobs:
-  - name: Stop canary traffic
-    type: deployer
-    target:
-      api_key: ${API_KEY}
-      region_id: ${PROD_REGION_ID}
-      resource_group: ${PROD_RESOURCE_GROUP}
-      kubernetes_cluster: ${PROD_CLUSTER_NAME}
-    script: |
-      #!/bin/bash
-      # uncomment to debug the script
-      # set -x
-      # copy the script below into your app code repo (e.g. ./scripts/istio_virtualservice_stable.sh) and 'source' it from your pipeline job
-      #    source ./scripts/istio_virtualservice_stable.sh
-      # alternatively, you can source it from online script:
-      #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_virtualservice_stable.sh")
-
-      # Route all traffic to "stable" destination (using Istio)
-      echo "Stop routing traffic to 'canary' destination"
-      source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_virtualservice_stable.sh")
-
-
-- name: ITER8
-  inputs:
-  - type: job
-    stage: BUILD
-    job: Build Docker image
-  triggers:
-    - type: stage
-      enabled: false
-  properties:
-  - name: buildprops
-    value: build.properties
-    type: file
-  - name: CLUSTER_NAMESPACE
-    value: ${PROD_CLUSTER_NAMESPACE}
-    type: text
-  - name: VIRTUAL_SERVICE_FILE
-    value: virtualservice-test.yaml
+  - name: EXPERIMENT_TEMPLATE_FILE
+    value: iter8/experiment.yaml
     type: text
   jobs:
   - name: Run iter8
@@ -242,15 +242,12 @@ stages:
       # copy the script below into your app code repo (e.g. ./scripts/create_experiment.sh) and 'source' it from your pipeline job
       #    source ./scripts/create_experiment.sh
       # alternatively, you can source it from online script:
-      #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/create_experiment.sh")
+      #    source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/create_experiment.sh")
 
-      # Route a fraction of traffic to "canary" destination (CANARY_WEIGHT), and rest to "stable" destination (using Istio)
-      BASELINE_VERSION=abcdef
-      CANARY_VERSION=${IMAGE_TAG}
-      source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/create_experiment.sh")
-
-
-- name: CANARY DARK
+      # Run canary experiment using iter8
+      BASELINE_VERSION=reviews
+      source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/create_experiment.sh")
+- name: DELETE CANARY VERSION
   inputs:
   - type: job
     stage: BUILD
@@ -265,11 +262,8 @@ stages:
   - name: CLUSTER_NAMESPACE
     value: ${PROD_CLUSTER_NAMESPACE}
     type: text
-  - name: VIRTUAL_SERVICE_FILE
-    value: virtualservice-canary-dark.yaml
-    type: text  
   jobs:
-  - name: Dark launch (FF)
+  - name: Stop iter8
     type: deployer
     target:
       api_key: ${API_KEY}
@@ -280,110 +274,10 @@ stages:
       #!/bin/bash
       # uncomment to debug the script
       # set -x
-      # copy the script below into your app code repo (e.g. ./scripts/istio_virtualservice_canary_dark.sh) and 'source' it from your pipeline job
-      #    source ./scripts/istio_virtualservice_canary_dark.sh
-      # alternatively, you can source it from online script:
-      #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_virtualservice_canary_dark.sh")
 
-      # Only traffic matching a user-agent rule is targeting "canary" destination, the rest goes to "stable" destination (using Istio)
-      source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_virtualservice_canary_dark.sh")
-  - name: Functional tests
-    type: deployer
-    target:
-      api_key: ${API_KEY}
-      region_id: ${PROD_REGION_ID}
-      resource_group: ${PROD_RESOURCE_GROUP}
-      kubernetes_cluster: ${PROD_CLUSTER_NAME}
-    script: |
-      #!/bin/bash
-      echo "Run some validation tests"
-      echo "Provide link to Prometheus/Istio dashboard"
-  - name: Chaos tests
-    type: deployer
-    target:
-      api_key: ${API_KEY}
-      region_id: ${PROD_REGION_ID}
-      resource_group: ${PROD_RESOURCE_GROUP}
-      kubernetes_cluster: ${PROD_CLUSTER_NAME}
-    script: |
-      #!/bin/bash
-      echo "Run some chaos tests"
-- name: CANARY 50%
-  inputs:
-  - type: job
-    stage: BUILD
-    job: Build Docker image
-  triggers:
-    - type: stage
-      enabled: false
-  properties:
-  - name: buildprops
-    value: build.properties
-    type: file
-  - name: CLUSTER_NAMESPACE
-    value: ${PROD_CLUSTER_NAMESPACE}
-    type: text
-  - name: VIRTUAL_SERVICE_FILE
-    value: virtualservice-test.yaml
-    type: text
-  jobs:
-  - name: Route 50% traffic
-    type: deployer
-    target:
-      api_key: ${API_KEY}
-      region_id: ${PROD_REGION_ID}
-      resource_group: ${PROD_RESOURCE_GROUP}
-      kubernetes_cluster: ${PROD_CLUSTER_NAME}
-    script: |
-      #!/bin/bash
-      # uncomment to debug the script
-      # set -x
-      # copy the script below into your app code repo (e.g. ./scripts/istio_virtualservice_canary_weight.sh) and 'source' it from your pipeline job
-      #    source ./scripts/istio_virtualservice_canary_weight.sh
-      # alternatively, you can source it from online script:
-      #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_virtualservice_canary_weight.sh")
-
-      # Route a fraction of traffic to "canary" destination (CANARY_WEIGHT), and rest to "stable" destination (using Istio)
-      CANARY_WEIGHT=50
-      source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_virtualservice_canary_weight.sh")
-- name: CANARY FINALIZE (AFTER MERGE)
-  inputs:
-  - type: job
-    stage: BUILD
-    job: Build Docker image
-  triggers:
-    - type: stage
-      enabled: false
-  properties:
-  - name: buildprops
-    value: build.properties
-    type: file
-  - name: CLUSTER_NAMESPACE
-    value: ${PROD_CLUSTER_NAMESPACE}
-    type: text
-  - name: VIRTUAL_SERVICE_FILE
-    value: virtualservice-test.yaml
-    type: text    
-  jobs:
-  - name: Stop canary traffic
-    type: deployer
-    target:
-      api_key: ${API_KEY}
-      region_id: ${PROD_REGION_ID}
-      resource_group: ${PROD_RESOURCE_GROUP}
-      kubernetes_cluster: ${PROD_CLUSTER_NAME}
-    script: |
-      #!/bin/bash
-      # uncomment to debug the script
-      # set -x
-      # copy the script below into your app code repo (e.g. ./scripts/istio_virtualservice_stable.sh) and 'source' it from your pipeline job
-      #    source ./scripts/istio_virtualservice_stable.sh
-      # alternatively, you can source it from online script:
-      #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_virtualservice_stable.sh")
-
-      # Route all traffic to "stable" destination (using Istio)
-      echo "Stop routing traffic to 'canary' destination"
-      source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_virtualservice_stable.sh")
+      # Stop iter8 experiment if still in progress
+      echo "Stop iter8 if still running"
+      echo kubectl --namespace ${CLUSTER_NAMESPACE} patch ${EXPERIMENT_NAME} --type=json -p '[{"op": "add", "path": "/spec/assessment", "value": "override_fail"} ]'
   - name: Discard canary deploy
     type: deployer
     target:
@@ -393,6 +287,24 @@ stages:
     script: |
       #!/bin/bash
       # Read deployment name from deployment manifest 
-      DEPLOYMENT_NAME=$( cat ${DEPLOYMENT_FILE} | yq r - -j | jq -r '. | select(.kind=="Deployment") | .metadata.name' ) # read deployment name
       echo "Delete canary deployment"
+      
+      opsys=linux  # or darwin, or windows
+      curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest |\
+        grep browser_download |\
+        grep $opsys |\
+        cut -d '"' -f 4 |\
+        xargs curl -O -L
+      mv kustomize_*_${opsys}_amd64 /usr/local/bin/kustomize
+      chmod u+x /usr/local/bin/kustomize
+
+      DEPLOYMENT_FILE=foo.yaml
+      sed -i -e "s#iter8/reviews:istio-VERSION#$PIPELINE_IMAGE_URL#" kustomize/patch.yaml
+      sed -i -e "s#VERSION#${IMAGE_TAG}#g" kustomize/patch.yaml
+      cat kustomize/patch.yaml
+      kustomize build kustomize -o ${DEPLOYMENT_FILE}
+      cat ${DEPLOYMENT_FILE}
+      export CANARY_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)
+
       kubectl delete deployment ${DEPLOYMENT_NAME}-canary --namespace ${CLUSTER_NAMESPACE}
+      

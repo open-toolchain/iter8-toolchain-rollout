@@ -25,13 +25,17 @@ fi
 
 #WOW: APP_NAME=$( cat ${DEPLOYMENT_FILE} | yq r - -j | jq -r '. | select(.kind=="Deployment") | if (.metadata.labels.app) then .metadata.labels.app else .metadata.name end' )
 NAME=$(yq read ${EXPERIMENT_TEMPLATE_FILE} metadata.name)
-echo $NAME
+# export experimet name so can later patch it
+export EXPERIMENT_NAME=${NAME}-${BUILD_NUMBER}
+echo "${NAME} --> ${EXPERIMENT_NAME}"
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} \
-  metadata.name ${NAME}-${BUILD_NUMBER}
+  metadata.name ${EXPERIMENT_NAME}
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} \
   spec.targetService.baseline ${BASELINE_VERSION}
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} \
   spec.targetService.candidate ${CANARY_DEPLOYMENT_NAME}
+yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} \
+  spec.trafficControl.onSuccess baseline
 cat ${EXPERIMENT_TEMPLATE_FILE}
 
 kubectl --namespace ${CLUSTER_NAMESPACE} \

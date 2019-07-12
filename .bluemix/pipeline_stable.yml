@@ -153,10 +153,10 @@ stages:
       # copy the script below into your app code repo (e.g. ./scripts/config_istio_canary.sh) and 'source' it from your pipeline job
       #    source ./scripts/config_istio_canary.sh
       # alternatively, you can source it from online script:
-      #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/config_istio_canary.sh")
+      #    source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/config_istio_canary.sh")
       
       # Configure Istio gateway with a destination rule (stable/canary), and virtual service
-      source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_config_canary.sh")
+      source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/istio_config_canary.sh")
   - name: Check iter8 config
     type: deployer
     target:
@@ -168,22 +168,13 @@ stages:
       #!/bin/bash
       # uncomment to debug the script
       # set -x
-
-      # copy the script below into your app code repo (e.g. ./scripts/istio_check_install.sh) and 'source' it from your pipeline job
-      #    source ./scripts/istio_check_install.sh
+      # copy the script below into your app code repo (e.g. ./scripts/iter8_check_install.sh) and 'source' it from your pipeline job
+      #    source ./scripts/iter8_check_install.sh
       # alternatively, you can source it from online script:
-      #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/iter8_check_install.sh")
+      #    source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/iter8_check_install.sh")
 
       # Check Istio installation in target cluster
-      source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/iter8_check_install.sh")
-      
-      # copy the script below into your app code repo (e.g. ./scripts/config_istio_canary.sh) and 'source' it from your pipeline job
-      #    source ./scripts/config_istio_canary.sh
-      # alternatively, you can source it from online script:
-      #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/config_istio_canary.sh")
-      
-      # Configure Istio gateway with a destination rule (stable/canary), and virtual service
-      source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/iter8_check_install.sh")
+      source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/iter8_check_install.sh")
   - name: Deploy to Kubernetes
     type: deployer
     target:
