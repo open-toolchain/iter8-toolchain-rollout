@@ -171,44 +171,6 @@ stages:
 
       USE_ISTIO_GATEWAY=true
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/deploy_kubectl.sh")
-# - name: CANARY 0% (EMERGENCY STOP)
-#   inputs:
-#   - type: job
-#     stage: BUILD
-#     job: Build Docker image
-#   triggers:
-#     - type: stage
-#       enabled: false
-#   properties:
-#   - name: buildprops
-#     value: build.properties
-#     type: file
-#   - name: CLUSTER_NAMESPACE
-#     value: ${PROD_CLUSTER_NAMESPACE}
-#     type: text
-#   - name: VIRTUAL_SERVICE_FILE
-#     value: virtualservice-test.yaml
-#     type: text    
-#   jobs:
-#   - name: Stop canary traffic
-#     type: deployer
-#     target:
-#       api_key: ${API_KEY}
-#       region_id: ${PROD_REGION_ID}
-#       resource_group: ${PROD_RESOURCE_GROUP}
-#       kubernetes_cluster: ${PROD_CLUSTER_NAME}
-#     script: |
-#       #!/bin/bash
-#       # uncomment to debug the script
-#       # set -x
-#       # copy the script below into your app code repo (e.g. ./scripts/istio_virtualservice_stable.sh) and 'source' it from your pipeline job
-#       #    source ./scripts/istio_virtualservice_stable.sh
-#       # alternatively, you can source it from online script:
-#       #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_virtualservice_stable.sh")
-
-#       # Route all traffic to "stable" destination (using Istio)
-#       echo "Stop routing traffic to 'canary' destination"
-#       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_virtualservice_stable.sh")
 - name: START CANARY EXPERIMENT (VIA ITER8)
   inputs:
   - type: job
@@ -277,7 +239,7 @@ stages:
 
       # Stop iter8 experiment if still in progress
       echo "Stop iter8 if still running"
-      echo kubectl --namespace ${CLUSTER_NAMESPACE} patch ${EXPERIMENT_NAME} --type=json -p '[{"op": "add", "path": "/spec/assessment", "value": "override_fail"} ]'
+      #echo kubectl --namespace ${CLUSTER_NAMESPACE} patch ${EXPERIMENT_NAME} --type=json -p '[{"op": "add", "path": "/spec/assessment", "value": "override_fail"}]'
   - name: Discard canary deploy
     type: deployer
     target:
