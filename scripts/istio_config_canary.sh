@@ -75,7 +75,8 @@ spec:
   subsets:
   - name: stable
     labels:
-      version: stable
+      app: reviews
+      version: v2
 EOF
 fi
 cat ${ISTIO_CONFIG_FILE}

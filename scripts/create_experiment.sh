@@ -17,6 +17,7 @@ echo "IMAGE_NAME=${IMAGE_NAME}"
 echo "IMAGE_TAG=${IMAGE_TAG}"
 echo "BASELINE_VERSION=${BASELINE_VERSION}"
 echo "CANARY_DEPLOYMENT_NAME=${CANARY_DEPLOYMENT_NAME}"
+echo "EXPERIMENT_TEMPLATE_FILE=${EXPERIMENT_TEMPLATE_FILE}"
 
 if [ -z "${EXPERIMENT_TEMPLATE_FILE}" ]; then EXPERIMENT_TEMPLATE_FILE=iter8_experiment.yaml ; fi
 if [ ! -f ${EXPERIMENT_TEMPLATE_FILE} ]; then
@@ -27,7 +28,8 @@ fi
 NAME=$(yq read ${EXPERIMENT_TEMPLATE_FILE} metadata.name)
 # export experimet name so can later patch it
 export EXPERIMENT_NAME=${NAME}-${BUILD_NUMBER}
-echo "${NAME} --> ${EXPERIMENT_NAME}"
+echo "EXPERIMENT_NAME=${EXPERIMENT_NAME}"
+
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} \
   metadata.name ${EXPERIMENT_NAME}
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} \

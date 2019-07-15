@@ -143,7 +143,7 @@ stages:
       # alternatively, you can source it from online script:
       #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/deploy_kubectl.sh")
 
-      # Infer parallelel deployment configuration for canary app, using Git branch name
+      # Infer parallel deployment configuration for canary app, using Git branch name
       echo -e "Updating $DEPLOYMENT_FILE to represent canary deployment: add label version, modify deployment name"
       #MK CANARY_DEPLOYMENT_FILE=canary-${DEPLOYMENT_FILE} # prefix original deployment file name
       #MK DEPLOYMENT_NAME=$( cat ${DEPLOYMENT_FILE} | yq r - -j | jq -r '. | select(.kind=="Deployment") | .metadata.name' ) # read deployment name
@@ -167,15 +167,22 @@ stages:
       cat kustomize/patch.yaml
       kustomize build kustomize -o ${DEPLOYMENT_FILE}
       cat ${DEPLOYMENT_FILE}
-      export CANARY_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)
-
+      CANARY_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)f
+      
       USE_ISTIO_GATEWAY=true
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/deploy_kubectl.sh")
+      # If already defined build.properties from prior build job, append to it.
+      cp build.properties $ARCHIVE_DIR/ || :
+
+      # IMAGE information from build.properties is used in Helm Chart deployment to set the release name
+      echo "CANARY_DEPLOYMENT_NAME=${CANARY_DEPLOYMENT_NAME}"
+      echo "CANARY_DEPLOYMENT_NAME=${CANARY_DEPLOYMENT_NAME}" >> $ARCHIVE_DIR/build.properties
+
 - name: START CANARY EXPERIMENT (VIA ITER8)
   inputs:
   - type: job
-    stage: BUILD
-    job: Build Docker image
+    stage: DEPLOY
+    job: Deploy to Kubernetes
   triggers:
     - type: stage
       enabled: false
@@ -266,7 +273,6 @@ stages:
       cat kustomize/patch.yaml
       kustomize build kustomize -o ${DEPLOYMENT_FILE}
       cat ${DEPLOYMENT_FILE}
-      export CANARY_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)
-
+      
       kubectl delete deployment ${DEPLOYMENT_NAME}-canary --namespace ${CLUSTER_NAMESPACE}
       
