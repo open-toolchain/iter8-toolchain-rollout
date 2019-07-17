@@ -107,6 +107,15 @@ stages:
   - name: CLUSTER_NAMESPACE
     value: ${PROD_CLUSTER_NAMESPACE}
     type: text    
+  - name: DEPLOYMENT_TEMPLATE
+    value: kustomize/deployment.yaml
+    type: text
+  - name: PATCH_FILE
+    value: kustomize/patch.yaml
+    type: text
+  - name: DEPLOYMENT_FILE
+    value: kustomize/deployment.yaml
+    type: text
   jobs:
   - name: Pre-deploy check
     type: deployer
@@ -127,6 +136,21 @@ stages:
       # Checks the cluster is ready, has a namespace configured with access to the private
       # image registry (using an IBM Cloud API Key). It also configures Helm Tiller service to later perform a deploy with Helm.
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_predeploy_kubectl.sh")
+  - name: Compute Canary Name
+    type: builder
+    curatedDockerImage: latest
+    artifact_dir: ''
+    build_type: shell
+    script: |
+      #!/bin/bash
+
+      export CANARY_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_TEMPLATE} metadata.name)
+
+      # If already defined build.properties from prior build job, append to it.
+      cp build.properties $ARCHIVE_DIR/ || :
+
+      # IMAGE information from build.properties is used in Helm Chart deployment to set the release name
+      echo "CANARY_DEPLOYMENT_NAME=${CANARY_DEPLOYMENT_NAME}" >> $ARCHIVE_DIR/build.properties
   - name: Deploy to Kubernetes
     type: deployer
     target:
@@ -143,15 +167,6 @@ stages:
       # alternatively, you can source it from online script:
       #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/deploy_kubectl.sh")
 
-      # Infer parallel deployment configuration for canary app, using Git branch name
-      echo -e "Updating $DEPLOYMENT_FILE to represent canary deployment: add label version, modify deployment name"
-      #MK CANARY_DEPLOYMENT_FILE=canary-${DEPLOYMENT_FILE} # prefix original deployment file name
-      #MK DEPLOYMENT_NAME=$( cat ${DEPLOYMENT_FILE} | yq r - -j | jq -r '. | select(.kind=="Deployment") | .metadata.name' ) # read deployment name
-      #MK # Substitute deployment name and version label (yaml>json>substitute>yaml)
-      #MK cat ${DEPLOYMENT_FILE} | yq r - -j | jq --arg l canary --arg n ${DEPLOYMENT_NAME}-canary '. | select(.kind=="Deployment") | .spec.template.metadata.labels.version = $l | .metadata.name = $n ' | yq r - > ${CANARY_DEPLOYMENT_FILE}
-      #MK DEPLOYMENT_FILE=${CANARY_DEPLOYMENT_FILE} # replace original deployment file
-      #MK cat ${DEPLOYMENT_FILE}
-
       opsys=linux  # or darwin, or windows
       curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest |\
         grep browser_download |\
@@ -161,28 +176,24 @@ stages:
       mv kustomize_*_${opsys}_amd64 /usr/local/bin/kustomize
       chmod u+x /usr/local/bin/kustomize
 
-      DEPLOYMENT_FILE=foo.yaml
-      sed -i -e "s#iter8/reviews:istio-VERSION#$PIPELINE_IMAGE_URL#" kustomize/patch.yaml
-      sed -i -e "s#VERSION#${IMAGE_TAG}#g" kustomize/patch.yaml
-      cat kustomize/patch.yaml
+      export DEPLOYMENT_FILE=deploy.yaml
+      sed -i -e "s#iter8/reviews:istio-VERSION#$PIPELINE_IMAGE_URL#" ${PATCH_FILE}
+      sed -i -e "s#VERSION#${IMAGE_TAG}#g" ${PATCH_FILE}
+      cat ${PATCH_FILE}
       kustomize build kustomize -o ${DEPLOYMENT_FILE}
       cat ${DEPLOYMENT_FILE}
-      CANARY_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)f
+
+      echo "-------------------------------"
+      echo $CANARY_DEPLOYMENT_NAME
+      echo "-------------------------------"
       
       USE_ISTIO_GATEWAY=true
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/deploy_kubectl.sh")
-      # If already defined build.properties from prior build job, append to it.
-      cp build.properties $ARCHIVE_DIR/ || :
-
-      # IMAGE information from build.properties is used in Helm Chart deployment to set the release name
-      echo "CANARY_DEPLOYMENT_NAME=${CANARY_DEPLOYMENT_NAME}"
-      echo "CANARY_DEPLOYMENT_NAME=${CANARY_DEPLOYMENT_NAME}" >> $ARCHIVE_DIR/build.properties
-
 - name: START CANARY EXPERIMENT (VIA ITER8)
   inputs:
   - type: job
     stage: DEPLOY
-    job: Deploy to Kubernetes
+    job: Compute Canary Name
   triggers:
     - type: stage
       enabled: false
@@ -197,6 +208,24 @@ stages:
     value: iter8/experiment.yaml
     type: text
   jobs:
+  - name: Calculate Experiment Name
+    type: builder
+    build_type: shell
+    script: |-
+      #!/bin/bash
+      # set -x
+
+      # Calculate the experiment name from the experiment template file
+      echo "EXPERIMENT_TEMPLATE_FILE=${EXPERIMENT_TEMPLATE_FILE}"
+      export EXPERIMENT_NAME=$(yq read ${EXPERIMENT_TEMPLATE_FILE} metadata.name)-${BUILD_NUMBER}
+      echo "EXPERIMENT_NAME=${EXPERIMENT_NAME}"
+
+      # Record name in build.properties so can use it to stop the experiment
+      # If already defined build.properties from prior build job, append to it.
+      cp build.properties $ARCHIVE_DIR/ || :
+
+      # IMAGE information from build.properties is used in Helm Chart deployment to set the release name
+      echo "EXPERIMENT_NAME=${EXPERIMENT_NAME}" >> $ARCHIVE_DIR/build.properties
   - name: Run iter8
     type: deployer
     target:
@@ -207,11 +236,11 @@ stages:
     script: |
       #!/bin/bash
       # uncomment to debug the script
-      # set -x
-      # copy the script below into your app code repo (e.g. ./scripts/create_experiment.sh) and 'source' it from your pipeline job
-      #    source ./scripts/create_experiment.sh
-      # alternatively, you can source it from online script:
-      #    source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/create_experiment.sh")
+      #set -x
+
+      echo "-------------------------------"
+      echo $CANARY_DEPLOYMENT_NAME
+      echo "-------------------------------"
 
       # Run canary experiment using iter8
       BASELINE_VERSION=reviews
@@ -219,8 +248,8 @@ stages:
 - name: DELETE CANARY VERSION
   inputs:
   - type: job
-    stage: BUILD
-    job: Build Docker image
+    stage: START CANARY (VIA ITER8)
+    job: Calculate Experiment Name
   triggers:
     - type: stage
       enabled: false
@@ -232,7 +261,7 @@ stages:
     value: ${PROD_CLUSTER_NAMESPACE}
     type: text
   jobs:
-  - name: Stop iter8
+  - name: Stop Experiment
     type: deployer
     target:
       api_key: ${API_KEY}
@@ -242,12 +271,12 @@ stages:
     script: |
       #!/bin/bash
       # uncomment to debug the script
-      # set -x
+      #set -x
 
       # Stop iter8 experiment if still in progress
-      echo "Stop iter8 if still running"
-      #echo kubectl --namespace ${CLUSTER_NAMESPACE} patch ${EXPERIMENT_NAME} --type=json -p '[{"op": "add", "path": "/spec/assessment", "value": "override_fail"}]'
-  - name: Discard canary deploy
+      echo "Stop iter8 experiment if still running"
+      kubectl --namespace ${CLUSTER_NAMESPACE} patch ${EXPERIMENT_NAME} --type=json -p '[{"op": "add", "path": "/spec/assessment", "value": "override_fail"}]'
+  - name: Delete Deployment
     type: deployer
     target:
       region_id: ${PROD_REGION_ID}
@@ -255,24 +284,9 @@ stages:
       kubernetes_cluster: ${PROD_CLUSTER_NAME}
     script: |
       #!/bin/bash
-      # Read deployment name from deployment manifest 
-      echo "Delete canary deployment"
-      
-      opsys=linux  # or darwin, or windows
-      curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest |\
-        grep browser_download |\
-        grep $opsys |\
-        cut -d '"' -f 4 |\
-        xargs curl -O -L
-      mv kustomize_*_${opsys}_amd64 /usr/local/bin/kustomize
-      chmod u+x /usr/local/bin/kustomize
+      # uncomment to debug the script
+      # set -x
 
-      DEPLOYMENT_FILE=foo.yaml
-      sed -i -e "s#iter8/reviews:istio-VERSION#$PIPELINE_IMAGE_URL#" kustomize/patch.yaml
-      sed -i -e "s#VERSION#${IMAGE_TAG}#g" kustomize/patch.yaml
-      cat kustomize/patch.yaml
-      kustomize build kustomize -o ${DEPLOYMENT_FILE}
-      cat ${DEPLOYMENT_FILE}
-      
+      echo "Delete canary deployment $DEPLOYMENT_NAME"
       kubectl delete deployment ${DEPLOYMENT_NAME}-canary --namespace ${CLUSTER_NAMESPACE}
       
