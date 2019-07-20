@@ -142,7 +142,7 @@ stages:
 
       # Check Istio installation in target cluster
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/iter8_check_install.sh")
-- name: START DEPLOY USING CANARY
+- name: CONFIGURE CANARY
   inputs:
   - type: job
     stage: BUILD
@@ -229,7 +229,7 @@ stages:
       # Run canary experiment using iter8
       echo "BASELINE_DEPLOYMENT_NAME=${BASELINE_DEPLOYMENT_NAME}"
       echo "CANARY_DEPLOYMENT_NAME=$CANARY_DEPLOYMENT_NAME"
-      ON_SUCCESS=canary
+      ON_SUCCESS=candidate
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/create_experiment.sh")
 - name: DEPLOY
   inputs:
@@ -316,7 +316,7 @@ stages:
 - name: DELETE ORIGINAL VERSION
   inputs:
   - type: job
-    stage: START DEPLOY USING CANARY
+    stage: CONFIGURE CANARY
     job: Prepare Experiment
   triggers:
   - type: stage
