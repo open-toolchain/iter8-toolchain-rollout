@@ -27,7 +27,7 @@ fi
 # Update experiment update
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} metadata.name ${EXPERIMENT_NAME}
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} spec.targetService.baseline ${BASELINE_DEPLOYMENT_NAME}
-yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} spec.targetService.candidate ${CANARY_VERSION}
+yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} spec.targetService.candidate ${CANARY_DEPLOYMENT_NAME}
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} spec.trafficControl.onSuccess ${ON_SUCCESS}
 
 cat ${EXPERIMENT_TEMPLATE_FILE}

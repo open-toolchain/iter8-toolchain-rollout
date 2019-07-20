@@ -146,9 +146,9 @@ stages:
   inputs:
   - type: job
     stage: BUILD
-    job: Build Docker Image
+    job: Build Docker image
   triggers:
-    - type: stage
+  - type: stage
   properties:
   - name: buildprops
     value: build.properties
@@ -319,8 +319,8 @@ stages:
     stage: START DEPLOY USING CANARY
     job: Prepare Experiment
   triggers:
-    - type: stage
-      enabled: false
+  - type: stage
+    enabled: false
   properties:
   - name: buildprops
     value: build.properties
