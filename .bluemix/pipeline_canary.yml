@@ -52,7 +52,7 @@ stages:
     script: |
       #!/bin/bash
       # uncomment to debug the script
-      #set -x
+      # set -x
       # copy the script below into your app code repo (e.g. ./scripts/build_image.sh) and 'source' it from your pipeline job
       #    source ./scripts/build_image.sh
       # alternatively, you can source it from online script:
@@ -127,7 +127,7 @@ stages:
     script: |
       #!/bin/bash
       # uncomment to debug the script
-      #set -x
+      # set -x
       # copy the script below into your app code repo (e.g. ./scripts/check_predeploy.sh) and 'source' it from your pipeline job
       #    source ./scripts/check_predeploy_kubectl.sh
       # alternatively, you can source it from online script:
@@ -143,13 +143,32 @@ stages:
     build_type: shell
     script: |
       #!/bin/bash
+      # uncomment to debug the script
+      # set -x
 
-      export CANARY_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_TEMPLATE} metadata.name)
+      # Identify canary
+      opsys=linux  # or darwin, or windows
+      curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest |\
+        grep browser_download |\
+        grep $opsys |\
+        cut -d '"' -f 4 |\
+        xargs curl -O -L
+      mv kustomize_*_${opsys}_amd64 /usr/local/bin/kustomize
+      chmod u+x /usr/local/bin/kustomize
+
+      export DEPLOYMENT_FILE=deploy.yaml
+      sed -i -e "s#iter8/reviews:istio-VERSION#$PIPELINE_IMAGE_URL#" ${PATCH_FILE}
+      sed -i -e "s#VERSION#${IMAGE_TAG}#g" ${PATCH_FILE}
+      cat ${PATCH_FILE}
+      kustomize build kustomize -o ${DEPLOYMENT_FILE}
+      cat ${DEPLOYMENT_FILE}
+
+      export CANARY_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)
+      # Calculate the canary deployment name from the deployment template
+      echo "CANARY_DEPLOYMENT_NAME=${CANARY_DEPLOYMENT_NAME}"
 
       # If already defined build.properties from prior build job, append to it.
       cp build.properties $ARCHIVE_DIR/ || :
-
-      # IMAGE information from build.properties is used in Helm Chart deployment to set the release name
       echo "CANARY_DEPLOYMENT_NAME=${CANARY_DEPLOYMENT_NAME}" >> $ARCHIVE_DIR/build.properties
   - name: Deploy to Kubernetes
     type: deployer
@@ -161,7 +180,7 @@ stages:
     script: |
       #!/bin/bash
       # uncomment to debug the script
-      #set -x
+      # set -x
       # copy the script below into your app code repo (e.g. ./scripts/deploy_kubectl.sh) and 'source' it from your pipeline job
       #    source ./scripts/deploy_kubectl.sh
       # alternatively, you can source it from online script:
@@ -183,10 +202,6 @@ stages:
       kustomize build kustomize -o ${DEPLOYMENT_FILE}
       cat ${DEPLOYMENT_FILE}
 
-      echo "-------------------------------"
-      echo $CANARY_DEPLOYMENT_NAME
-      echo "-------------------------------"
-      
       USE_ISTIO_GATEWAY=true
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/deploy_kubectl.sh")
 - name: START CANARY EXPERIMENT (VIA ITER8)
@@ -213,6 +228,7 @@ stages:
     build_type: shell
     script: |-
       #!/bin/bash
+      # uncomment to debug the script
       # set -x
 
       # Calculate the experiment name from the experiment template file
@@ -223,10 +239,8 @@ stages:
       # Record name in build.properties so can use it to stop the experiment
       # If already defined build.properties from prior build job, append to it.
       cp build.properties $ARCHIVE_DIR/ || :
-
-      # IMAGE information from build.properties is used in Helm Chart deployment to set the release name
       echo "EXPERIMENT_NAME=${EXPERIMENT_NAME}" >> $ARCHIVE_DIR/build.properties
-  - name: Run iter8
+  - name: Start Experiment
     type: deployer
     target:
       api_key: ${API_KEY}
@@ -236,19 +250,21 @@ stages:
     script: |
       #!/bin/bash
       # uncomment to debug the script
-      #set -x
+      # set -x
 
-      echo "-------------------------------"
-      echo $CANARY_DEPLOYMENT_NAME
-      echo "-------------------------------"
+      # Identify baseline
+      export BASELINE_DEPLOYMENT_NAME=$(kubectl --namespace ${CLUSTER_NAMESPACE} get deploy --selector=$(kubectl --namespace ${CLUSTER_NAMESPACE} get dr --selector=iter8.tools/role=stable -o json | jq -r '.items[0].spec.subsets[] | select(.name == "stable") | .labels | to_entries[] | "\(.key)=\(.value)"' | paste -sd',' -) -o jsonpath='{.items[0].metadata.name}')
+      echo "BASELINE_DEPLOYMENT_NAME=${BASELINE_DEPLOYMENT_NAME}"
 
       # Run canary experiment using iter8
-      BASELINE_VERSION=reviews
+      BASELINE_VERSION=$BASELINE_DEPLOYMENT_NAME
+      echo "BASELINE_VERSION=$BASELINE_VERSION"
+      echo "CANARY_DEPLOYMENT_NAME=$CANARY_DEPLOYMENT_NAME"
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/create_experiment.sh")
 - name: DELETE CANARY VERSION
   inputs:
   - type: job
-    stage: START CANARY (VIA ITER8)
+    stage: START CANARY EXPERIMENT (VIA ITER8)
     job: Calculate Experiment Name
   triggers:
     - type: stage
@@ -271,11 +287,14 @@ stages:
     script: |
       #!/bin/bash
       # uncomment to debug the script
-      #set -x
+      # set -x
 
       # Stop iter8 experiment if still in progress
       echo "Stop iter8 experiment if still running"
-      kubectl --namespace ${CLUSTER_NAMESPACE} patch ${EXPERIMENT_NAME} --type=json -p '[{"op": "add", "path": "/spec/assessment", "value": "override_fail"}]'
+      kubectl --namespace ${CLUSTER_NAMESPACE} \
+        patch experiment ${EXPERIMENT_NAME} \
+        --type=json -p '[{"op": "add", "path": "/spec/assessment", "value": "override_success"}]' \
+      || true # don't fail when the experiment can't be found
   - name: Delete Deployment
     type: deployer
     target:
@@ -288,5 +307,5 @@ stages:
       # set -x
 
       echo "Delete canary deployment $DEPLOYMENT_NAME"
-      kubectl delete deployment ${DEPLOYMENT_NAME}-canary --namespace ${CLUSTER_NAMESPACE}
-      
+      kubectl delete deployment ${CANARY_DEPLOYMENT_NAME} --namespace ${CLUSTER_NAMESPACE}
+   
