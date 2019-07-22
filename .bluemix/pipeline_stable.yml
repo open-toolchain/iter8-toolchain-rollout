@@ -199,7 +199,7 @@ stages:
         echo -e "${red}iter8 experiment template '${EXPERIMENT_TEMPLATE_FILE}' not found${no_color}"
       fi
 
-      export EXPERIMENT_NAME=$(yq read ${EXPERIMENT_TEMPLATE_FILE} metadata.name)-${BUILD_NUMBER}
+      export EXPERIMENT_NAME=$(yq read ${EXPERIMENT_TEMPLATE_FILE} metadata.name)-master-${BUILD_NUMBER}
       echo "EXPERIMENT_NAME=${EXPERIMENT_NAME}"
 
       # Record names in build.properties for use by later stages
