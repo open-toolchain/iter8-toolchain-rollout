@@ -208,10 +208,7 @@ stages:
       CANARY_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)
 
       # Identify baseline deployment by searching the cluster
-      BASELINE_DEPLOYMENT_NAME=$(kubectl --namespace ${CLUSTER_NAMESPACE} get deploy --selector=$(kubectl --namespace ${CLUSTER_NAMESPACE} get dr --selector=iter8.tools/role=stable -o json | jq -r '.items[0].spec.subsets[] | select(.name == "stable") | .labels | to_entries[] | "\(.key)=\(.value)"' | paste -sd',' -) -o jsonpath='{.items[0].metadata.name}') || true
-      if [[ -z "${BASELINE_DEPLOYMENT_NAME}" ]]; then
-        BASELINE_DEPLOYMENT_NAME="${CANARY_DEPLOYMENT_NAME}"
-      fi
+      source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/create_experiment.sh")
  
       # Run canary experiment using iter8
       echo "BASELINE_DEPLOYMENT_NAME=${BASELINE_DEPLOYMENT_NAME}"
