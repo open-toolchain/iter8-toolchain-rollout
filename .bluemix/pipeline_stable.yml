@@ -188,8 +188,6 @@ stages:
       # Record names in build.properties for use by later stages
       #   append to existing build.properties if already defined
       cp build.properties $ARCHIVE_DIR/ || :
-      echo "BASELINE_DEPLOYMENT_NAME=${BASELINE_DEPLOYMENT_NAME}" >> $ARCHIVE_DIR/build.properties
-      echo "CANARY_DEPLOYMENT_NAME=${CANARY_DEPLOYMENT_NAME}" >> $ARCHIVE_DIR/build.properties
       echo "EXPERIMENT_NAME=${EXPERIMENT_NAME}" >> $ARCHIVE_DIR/build.properties
   - name: Configure Rollout
     type: deployer
@@ -209,7 +207,8 @@ stages:
 
       # Identify baseline deployment by searching the cluster
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/identifiy_stable.sh")
- 
+      if [[ -z $BASELINE_DEPLOYMENT_NAME ]]; then BASELINE_DEPLOYMENT_NAME=$CANARY_DEPLOYMENT_NAME; fi
+
       # Run canary experiment using iter8
       echo "BASELINE_DEPLOYMENT_NAME=${BASELINE_DEPLOYMENT_NAME}"
       echo "CANARY_DEPLOYMENT_NAME=$CANARY_DEPLOYMENT_NAME"
@@ -304,7 +303,6 @@ stages:
     job: Prepare For Rollout
   triggers:
   - type: stage
-    enabled: false
   properties:
   - name: buildprops
     value: build.properties
@@ -313,24 +311,6 @@ stages:
     value: ${PROD_CLUSTER_NAMESPACE}
     type: text
   jobs:
-  - name: Stop Experiment
-    type: deployer
-    target:
-      api_key: ${API_KEY}
-      region_id: ${PROD_REGION_ID}
-      resource_group: ${PROD_RESOURCE_GROUP}
-      kubernetes_cluster: ${PROD_CLUSTER_NAME}
-    script: |
-      #!/bin/bash
-      # uncomment to debug the script
-      # set -x
-
-      # Stop iter8 experiment if still in progress
-      echo "Stop iter8 experiment if still running"
-      kubectl --namespace ${CLUSTER_NAMESPACE} \
-        patch experiment ${EXPERIMENT_NAME} \
-        --type=json -p '[{"op": "add", "path": "/spec/assessment", "value": "override_success"}]' \
-      || true # don't fail when the experiment can't be found
   - name: Delete Deployment
     type: deployer
     target:
