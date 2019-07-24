@@ -172,7 +172,7 @@ stages:
       # set -x
 
       # Identify baseline deploymet
-      source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/create_experiment.sh")
+      source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/identifiy_stable.sh")
  
       # Run canary experiment using iter8
       echo "BASELINE_DEPLOYMENT_NAME=${BASELINE_DEPLOYMENT_NAME}"
