@@ -249,8 +249,8 @@ stages:
     stage: CONFIGURE CANARY
     job: Prepare Experiment
   triggers:
-    - type: stage
-      enabled: false
+  - type: stage
+    enabled: false
   properties:
   - name: buildprops
     value: build.properties
@@ -288,6 +288,6 @@ stages:
       # uncomment to debug the script
       # set -x
 
-      echo "Delete canary deployment $DEPLOYMENT_NAME"
+      CANARY_DEPLOYMENT_NAME=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.spec.targetService.candidate}')
+      echo "Delete canary deployment $CANARY_DEPLOYMENT_NAME"
       kubectl delete deployment ${CANARY_DEPLOYMENT_NAME} --namespace ${CLUSTER_NAMESPACE}
-   

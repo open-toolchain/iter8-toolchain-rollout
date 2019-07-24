@@ -9,7 +9,7 @@ stages:
   inputs:
   - type: git
     branch: ${GIT_BRANCH}
-    service: ${GIT_REPO}    
+    service: ${GIT_REPO}
   triggers:
   - type: commit
   properties:
@@ -142,7 +142,7 @@ stages:
 
       # Check Istio installation in target cluster
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/iter8_check_install.sh")
-- name: CONFIGURE CANARY
+- name: PREPARE CANDIDATE ROLLOUT
   inputs:
   - type: job
     stage: BUILD
@@ -165,14 +165,8 @@ stages:
   - name: EXPERIMENT_NAME
     value: 
     type: text
-  - name: BASELINE_DEPLOYMENT_NAME
-    value: 
-    type: text
-  - name: CANARY_DEPLOYMENT_NAME
-    value: 
-    type: text
   jobs:
-  - name: Prepare Experiment
+  - name: Prepare For Rollout
     type: builder
     curatedDockerImage: latest
     artifact_dir: ''
@@ -181,17 +175,6 @@ stages:
       #!/bin/bash
       # uncomment to debug the script
       # set -x
-
-      # Identify canary deployment name from the deployment yaml
-      # copy the script below into your app code repo (e.g. ./scripts/create_deployment.sh) and 'source' it from your pipeline job
-      #    source ./scripts/create_deployment.sh
-      # alternatively, you can source it from online script:
-      #    source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/create_deployment.sh")
-      # Create canary deployment yaml
-      source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/create_deployment.sh")
-
-      export CANARY_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)
-      echo "CANARY_DEPLOYMENT_NAME=${CANARY_DEPLOYMENT_NAME}"
 
       # Identify experiment name to use
       if [ -z "${EXPERIMENT_TEMPLATE_FILE}" ]; then EXPERIMENT_TEMPLATE_FILE=iter8_experiment.yaml ; fi
@@ -208,7 +191,7 @@ stages:
       echo "BASELINE_DEPLOYMENT_NAME=${BASELINE_DEPLOYMENT_NAME}" >> $ARCHIVE_DIR/build.properties
       echo "CANARY_DEPLOYMENT_NAME=${CANARY_DEPLOYMENT_NAME}" >> $ARCHIVE_DIR/build.properties
       echo "EXPERIMENT_NAME=${EXPERIMENT_NAME}" >> $ARCHIVE_DIR/build.properties
-  - name: Start Experiment
+  - name: Configure Rollout
     type: deployer
     target:
       api_key: ${API_KEY}
@@ -220,8 +203,12 @@ stages:
       # uncomment to debug the script
       # set -x
 
-      # Identify baseline deploymet
-      export BASELINE_DEPLOYMENT_NAME=$(kubectl --namespace ${CLUSTER_NAMESPACE} get deploy --selector=$(kubectl --namespace ${CLUSTER_NAMESPACE} get dr --selector=iter8.tools/role=stable -o json | jq -r '.items[0].spec.subsets[] | select(.name == "stable") | .labels | to_entries[] | "\(.key)=\(.value)"' | paste -sd',' -) -o jsonpath='{.items[0].metadata.name}') || true
+      # Identify canary deployment name from the deployment yaml
+      source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/create_deployment.sh")
+      CANARY_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)
+
+      # Identify baseline deployment by searching the cluster
+      BASELINE_DEPLOYMENT_NAME=$(kubectl --namespace ${CLUSTER_NAMESPACE} get deploy --selector=$(kubectl --namespace ${CLUSTER_NAMESPACE} get dr --selector=iter8.tools/role=stable -o json | jq -r '.items[0].spec.subsets[] | select(.name == "stable") | .labels | to_entries[] | "\(.key)=\(.value)"' | paste -sd',' -) -o jsonpath='{.items[0].metadata.name}') || true
       if [[ -z "${BASELINE_DEPLOYMENT_NAME}" ]]; then
         BASELINE_DEPLOYMENT_NAME="${CANARY_DEPLOYMENT_NAME}"
       fi
@@ -231,7 +218,7 @@ stages:
       echo "CANARY_DEPLOYMENT_NAME=$CANARY_DEPLOYMENT_NAME"
       ON_SUCCESS=candidate
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/create_experiment.sh")
-- name: DEPLOY
+- name: DEPLOY CANDIDATE RELEASE
   inputs:
   - type: job
     stage: BUILD
@@ -313,11 +300,11 @@ stages:
 
       # Check liveness and readiness probes to confirm application is healthy
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_health.sh")
-- name: DELETE ORIGINAL VERSION
+- name: FINALIZE CANDIDATE ROLLOUT
   inputs:
   - type: job
-    stage: CONFIGURE CANARY
-    job: Prepare Experiment
+    stage: PREPARE CANDIDATE ROLLOUT
+    job: Prepare For Rollout
   triggers:
   - type: stage
     enabled: false
@@ -357,6 +344,85 @@ stages:
       #!/bin/bash
       # uncomment to debug the script
       # set -x
+      # copy the script below into your app code repo (e.g. ./scripts/wait_complete.sh) and 'source' it from your pipeline job
+      #    source ./scripts/wait_complete.sh
+      # alternatively, you can source it from online script:
+      #    source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/wait_complete.sh")
 
-      echo "Delete canary deployment $BASELINE_DEPLOYMENT_NAME"
-      kubectl delete deployment ${BASELINE_DEPLOYMENT_NAME} --namespace ${CLUSTER_NAMESPACE}
+      # Check liveness and readiness probes to confirm application is healthy
+      source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/wait_complete.sh")
+- name: IMMEDIATE ROLLBACK
+  inputs:
+  - type: job
+    stage: PREPARE CANDIDATE ROLLOUT
+    job: Prepare For Rollout
+  triggers:
+  - type: stage
+    enabled: false
+  properties:
+  - name: buildprops
+    value: build.properties
+    type: file
+  - name: CLUSTER_NAMESPACE
+    value: ${PROD_CLUSTER_NAMESPACE}
+    type: text
+  jobs:
+  - name: Rollback
+    type: deployer
+    target:
+      region_id: ${PROD_REGION_ID}
+      api_key: ${API_KEY}
+      kubernetes_cluster: ${PROD_CLUSTER_NAME}
+    script: |
+      #!/bin/bash
+      # uncomment to debug the script
+      # set -x
+
+      # Override experiment as failure
+      echo "Stop iter8 experiment if still running"
+      kubectl --namespace ${CLUSTER_NAMESPACE} \
+        patch experiment ${EXPERIMENT_NAME} \
+        --type=json -p '[{"op": "add", "path": "/spec/assessment", "value": "override_failure"}]' \
+      || true # don't fail when the experiment can't be found
+
+      # Delete candidate deployment
+      CANARY_DEPLOYMENT_NAME=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.spec.targetService.baseline}')
+      echo "Delete candidate deployment $CANARY_DEPLOYMENT_NAME"
+      kubectl delete deployment ${CANARY_DEPLOYMENT_NAME} --namespace ${CLUSTER_NAMESPACE} --ignore-not-found
+- name: IMMEDIATE ROLLFORWARD
+  inputs:
+  - type: job
+    stage: PREPARE CANDIDATE ROLLOUT
+    job: Prepare For Rollout
+  triggers:
+  - type: stage
+    enabled: false
+  properties:
+  - name: buildprops
+    value: build.properties
+    type: file
+  - name: CLUSTER_NAMESPACE
+    value: ${PROD_CLUSTER_NAMESPACE}
+    type: text
+  jobs:
+  - name: Rollforward
+    type: deployer
+    target:
+      region_id: ${PROD_REGION_ID}
+      api_key: ${API_KEY}
+      kubernetes_cluster: ${PROD_CLUSTER_NAME}
+    script: |
+      #!/bin/bash
+      # uncomment to debug the script
+      # set -x
+
+      # Override experiment as successful
+      kubectl --namespace ${CLUSTER_NAMESPACE} \
+        patch experiment ${EXPERIMENT_NAME} \
+        --type=json -p '[{"op": "add", "path": "/spec/assessment", "value": "override_success"}]' \
+      || true # don't fail when the experiment can't be found
+
+      # Delete baseline deployment
+      BASELINE_DEPLOYMENT_NAME=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.spec.targetService.baseline}')
+      echo "Delete deployment $BASELINE_DEPLOYMENT_NAME"
+      kubectl delete deployment ${BASELINE_DEPLOYMENT_NAME} --namespace ${CLUSTER_NAMESPACE} --ignore-not-found
