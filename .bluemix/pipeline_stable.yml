@@ -206,7 +206,7 @@ stages:
       CANARY_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)
 
       # Identify baseline deployment by searching the cluster
-      source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/identifiy_stable.sh")
+      source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/identify_stable.sh")
       if [[ -z $BASELINE_DEPLOYMENT_NAME ]]; then BASELINE_DEPLOYMENT_NAME=$CANARY_DEPLOYMENT_NAME; fi
 
       # Run canary experiment using iter8
