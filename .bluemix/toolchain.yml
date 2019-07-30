@@ -93,6 +93,14 @@ services:
         execute: false
   webide:
     service_id: orion
+  grafana:
+    service_id: customtool
+    type: grafana
+    lifecyclePhase: "MANAGE"
+    name: Canary Dashboard
+    dashboard_url: /d/eXPEaNnZz/iter8-application-metrics
+    description: Grafana dashboard for canary 
+
 form:
   pipeline:
     parameters:
