@@ -98,8 +98,8 @@ services:
     type: grafana
     lifecyclePhase: "MANAGE"
     name: Canary Dashboard
-    dashboard_url: /d/eXPEaNnZz/iter8-application-metrics
-    description: Grafana dashboard for canary 
+    dashboard_url: GRAFANA_URL/d/eXPEaNnZz/iter8-application-metrics
+    description: Grafana dashboard for canary tests
 
 form:
   pipeline:
