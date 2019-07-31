@@ -1,6 +1,6 @@
 #!/bin/bash
 # uncomment to debug the script
-set -x
+#set -x
 # copy the script below into your app code repo (e.g. ./scripts/wait_complete.sh) and 'source' it from your pipeline job
 #    source ./scripts/create_deployment.sh
 # alternatively, you can source it from online script:
@@ -8,12 +8,15 @@ set -x
 # ------------------
 # source: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/wait_complete.sh
 
-# Create canary deployment yaml
+# Wait for experiment $EXPERIMENT_NAME to complete
+# AND delete the inactive deployment
 
 # Constants
 MAX_DURATION=$(( 59*60 ))
 BASELINE="baseline"
 CANDIDATE="candidate"
+OVERRIDE_FAILURE="override_failure"
+OVERRIDE_SUCCESS="override_success"
 
 # Default values if not set
 SLEEP_TIME=${SLEEP_TIME:-5}
@@ -21,16 +24,17 @@ DURATION=${DURATION:-$(( 59*60 ))}
 
 # Validate ${DURARTION}
 # If duration > 1 hr report warning in log and reset to 59 minutes
-if $(( ${DURATION} > ${MAX_DURATION} )); then
+if (( ${DURATION} > ${MAX_DURATION} )); then
     echo "WARNING: Unable to monitor rollout for more than 59 minutes"
     echo "  Setting duration to 59 minutes"
     DURATION=${MAX_DURATION}
 fi
 
-echo "  EXPERIMENT_NAME = $EXPERIMENT_NAME"
-echo "CLUSTER_NAMESPACE = $CLUSTER_NAMESPACE"
-echo "         DURATION = $DURATION"
-echo "       SLEEP_TIME = $SLEEP_TIME"
+echo "   EXPERIMENT_NAME = $EXPERIMENT_NAME"
+echo " CLUSTER_NAMESPACE = $CLUSTER_NAMESPACE"
+echo "          DURATION = $DURATION"
+echo "        SLEEP_TIME = $SLEEP_TIME"
+echo " FORCE_TERMINATION = $FORCE_TERMINATION"
 
 get_experiment_status() {
   kubectl --namespace ${CLUSTER_NAMESPACE} \
@@ -50,29 +54,95 @@ while (( timePassedS < ${DURATION} )); do
     # if baseline and candidate are the same then don't delete anything
     _baseline=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.spec.targetService.baseline}')
     _candidate=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.spec.targetService.candidate}')
+    echo "         _baseline = ${_baseline}"
+    echo "        _candidate = ${_candidate}"
     if [[ "${_baseline}" == "${_candidate}" ]]; then
       exit 0
     fi
 
-    # determine deployment to delete
-    _on_success=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.spec.trafficControl.onSuccess}')
-    if [[ "${_on_success}" == "$BASELINE" ]]; then _version_to_delete="$CANDIDATE"
-    elif [[ "${_on_success}" == "$CANDIDATE" ]]; then _version_to_delete="$BASELINE"
-    elif [[ "${_on_success}" == "both" ]]; then exit 0 # both; don't delete anything
-    else _version_to_delete="$CANDIDATE" # default if not set (or set incorrectly)
+    # To determine which version to delete: look at traffic split
+    _b_traffic=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.status.trafficSplitPercentage.baseline}')
+    _c_traffic=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.status.trafficSplitPercentage.candidate}')
+    echo " baseline traffic is ${_b_traffic}"
+    echo "candidate traffic is ${_c_traffic}"
+
+    # Select the one not receiving any traffic
+    _version_to_delete=
+    if (( ${_b_traffic} == 0 )); then _version_to_delete="$BASELINE";
+    elif (( ${_c_traffic} == 0 )); then _version_to_delete="$CANDIDATE";
+    else exit 0 # don't delete a version since traffic is still split
     fi
-    
-    # sanity check the trafficSplitPercentage
-    _percentage=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o json | jq -r --arg v ${_version_to_delete} '.status.trafficSplitPercentage[$v]')
-    if (( ${_percentage} != 0 )); then
-        echo "ERROR: Expected traffic percentage to be 0; found it was ${_percentage}"
-        exit 1
-    fi
+    echo "_version_to_delete = ${_version_to_delete}"
+
+    # Delete it
+    _deployment_to_delete=
     if [[ "${_version_to_delete}" == "$BASELINE" ]]; then _deployment_to_delete=${_baseline};
+    elif [[ "${_version_to_delete}" == "$CANDIDATE" ]]; then _deployment_to_delete=${_candidate};
     else _deployment_to_delete=${_candidate}; fi
-    echo kubectl --namespace ${CLUSTER_NAMESPACE} delete deployment ${_deployment_to_delete}
-    exit 0
-  fi
+    if [[ -n ${_deployment_to_delete} ]]; then
+      echo kubectl --namespace ${CLUSTER_NAMESPACE} delete deployment ${_deployment_to_delete} --ignore-not-found
+    fi
+
+    # In order to determine the status of this step, we need to know if the version we deleted
+    # is the one we expected to delete.
+    # In the normal case, we inspect the spec.trafficControl.onSuccess
+    # In the exception case (a user forced a termination), we inspect spec.assessment
+    # To decide which case to consider, we look to see if $FORCE_TERMINATION is defined
+    _assessment=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.spec.assessment}')
+    echo "       _assessment = ${_assessment}"
+    if [[ -n $FORCE_TERMINATION ]]; then
+      if [[ -z ${_version_to_delete} ]]; then
+        echo "ERROR: Experiment ${EXPERIMENT_NAME} was manuually terminated but no version could be identified to delete."
+        exit 1
+      fi
+      if [[ -z ${_assessment} ]]; then
+        echo "ERROR: Expected experiment ${EXPERIMENT_NAME} to have been manually terminated but spec.assessment not set."
+        exit 1
+      fi
+      if [[ "${_assessment}" == "${OVERRIDE_SUCCESS}" ]]; then
+        if [[ "${_version_to_delete}" == "${BASELINE}" ]]; then exit 0;
+        else 
+          echo "ERROR: Experiment ${EXPERIMENT_NAME} was rolled forward. However ${CANDIDATE} version ${_deployment_to_delete} was deleted instead of baseline."
+          exit 1
+        fi
+      elif [[ "${_assessment}" == "${OVERRIDE_FAILURE}" ]]; then
+        if [[ "${_version_to_delete}" == "${CANDIDATE}" ]]; then exit 0;
+        else 
+          echo "ERROR: Experiment ${EXPERIMENT_NAME} was rolled back. However ${BASELINE} version ${_deployment_to_delete} was deleted instead of candidate."
+          exit 1
+        fi
+      else # unknown value in spec.assessment
+        echo "ERROR: Invalid value specified for spec.assessment in experiment ${EXPERIMENT_NAME}"
+        exit 1
+      fi
+    fi
+
+    if [[ -n ${_assessment} ]] && [[ -z ${FORCE_TERMINATION} ]]; then
+      echo "WARNING: spec.assessment unexpectedly set in experiment ${EXPERIMENT_NAME}"
+    fi
+
+    # if $FORCE_TERMINATION was not set look at _on_success
+    _on_success=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.spec.trafficControl.onSuccess}')
+    echo "       _on_success = ${_on_success}"
+    if [[ -z ${_on_success} ]]; then _on_success="${CANDIDATE}"; fi
+    if [[ "${_on_success}" == "$BASELINE" ]]; then
+      if [[ "${_version_to_delete}" == "${CANDIDATE}" ]]; then exit 0;
+      else
+        echo "ERROR: Desired final version is ${BASELINE} version ${_baseline}"
+        echo "       However, it (${_deployment_to_delete}) was deleted, perhaps due to manual intervention."
+        exit 1
+      fi
+    elif [[ "${_on_success}" == "$CANDIDATE" ]]; then
+      if [[ "${_version_to_delete}" == "${BASELINE}" ]]; then exit 0;
+      else
+        echo "ERROR: Desired final version is ${CANDIDATE} version ${_candidate}"
+        echo "       However, it (${_deployment_to_delete}) was deleted, perhaps due to manual intervention."
+        exit 1
+      fi
+    elif [[ "${_on_success}" == "both" ]]; then exit 0;
+    fi
+
+  fi # if [[ "${status}" == "True" ]]
 
   timePassedS=$(( $(date +%s) - $startS ))
 done

@@ -362,10 +362,9 @@ stages:
         --type=json -p '[{"op": "add", "path": "/spec/assessment", "value": "override_failure"}]' \
       || true # don't fail when the experiment can't be found
 
-      # Delete candidate deployment
-      CANARY_DEPLOYMENT_NAME=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.spec.targetService.baseline}')
-      echo "Delete candidate deployment $CANARY_DEPLOYMENT_NAME"
-      kubectl delete deployment ${CANARY_DEPLOYMENT_NAME} --namespace ${CLUSTER_NAMESPACE} --ignore-not-found
+      # Wait for termination and delete canary deployment
+      FORCE_TERMINATION=true
+      source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/wait_complete.sh")
 - name: IMMEDIATE ROLLFORWARD
   inputs:
   - type: job
@@ -399,7 +398,6 @@ stages:
         --type=json -p '[{"op": "add", "path": "/spec/assessment", "value": "override_success"}]' \
       || true # don't fail when the experiment can't be found
 
-      # Delete baseline deployment
-      BASELINE_DEPLOYMENT_NAME=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.spec.targetService.baseline}')
-      echo "Delete deployment $BASELINE_DEPLOYMENT_NAME"
-      kubectl delete deployment ${BASELINE_DEPLOYMENT_NAME} --namespace ${CLUSTER_NAMESPACE} --ignore-not-found
+      # Wait for termination and delete baseline deployment
+      FORCE_TERMINATION=true
+      source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/wait_complete.sh")
