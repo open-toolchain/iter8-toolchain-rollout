@@ -118,37 +118,62 @@ spec:
     openAPIV3Schema:
       properties:
         apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
           type: string
         kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
           type: string
         metadata:
           type: object
         spec:
           properties:
             analysis:
+              description: Analysis parameters
               properties:
                 analyticsService:
+                  description: AnalyticsService endpoint
                   type: string
                 grafanaEndpoint:
+                  description: Grafana Dashboard endpoint
                   type: string
                 successCriteria:
+                  description: List of criteria for assessing the candidate version
                   items:
                     properties:
                       metricName:
+                        description: 'Name of the metric to which the criterion applies.
+                          Options: "iter8_latency": mean latency of the service "iter8_error_rate":
+                          mean error rate (~5** HTTP Status codes) of the service
+                          "iter8_error_count": total error count (~5** HTTP Status
+                          codes) of the service'
                         enum:
                         - iter8_latency
                         - iter8_error_rate
                         - iter8_error_count
                         type: string
                       sampleSize:
+                        description: Minimum number of data points required to make
+                          a decision based on this criterion; If not specified, the
+                          default value is 10
                         format: int64
                         type: integer
                       stopOnFailure:
+                        description: Indicates whether or not the experiment must
+                          finish if this criterion is not satisfied; defaults to false
                         type: boolean
                       tolerance:
+                        description: Value to check
                         format: double
                         type: number
                       toleranceType:
+                        description: "\tCriterion type. Options: \"delta\": compares
+                          the candidate against the baseline version with respect
+                          to the metric; \"threshold\": checks the candidate with
+                          respect to the metric"
                         enum:
                         - threshold
                         - delta
@@ -160,35 +185,63 @@ spec:
                     type: object
                   type: array
               type: object
+            assessment:
+              description: Assessment is a flag to terminate experiment with action
+              enum:
+              - override_success
+              - override_failure
+              type: string
             targetService:
+              description: TargetService is a reference to an object to use as target
+                service
               properties:
                 baseline:
+                  description: Baseline tells the name of baseline
                   type: string
                 candidate:
+                  description: Candidate tells the name of candidate
                   type: string
               type: object
             trafficControl:
+              description: TrafficControl defines parameters for controlling the traffic
               properties:
                 interval:
+                  description: Interval is the time in second before the next increment.
+                    Default is 1mn
                   type: string
                 maxIterations:
+                  description: Maximum number of iterations for this experiment. Default
+                    to 100.
                   format: int64
                   type: integer
                 maxTrafficPercentage:
+                  description: MaxTrafficPercentage is the maximum traffic ratio to
+                    send to the candidate. Default is 50
                   format: double
                   type: number
                 onSuccess:
+                  description: 'Determines how the traffic must be split at the end
+                    of the experiment; options: "baseline": all traffic goes to the
+                    baseline version; "candidate": all traffic goes to the candidate
+                    version; "both": traffic is split across baseline and candidate.
+                    Defaults to “candidate”'
                   enum:
                   - baseline
                   - candidate
                   - both
                   type: string
                 strategy:
+                  description: 'Strategy is the strategy used for experiment. Options:
+                    "check_and_increment": get decision on traffic increament from
+                    analytics "increment_without_check": increase traffic each interval
+                    without calling analytics'
                   enum:
                   - check_and_increment
                   - increment_without_check
                   type: string
                 trafficStepSize:
+                  description: TrafficStepSize is the traffic increment per interval.
+                    Default is 2.0
                   format: double
                   type: number
               type: object
@@ -198,28 +251,45 @@ spec:
         status:
           properties:
             analysisState:
+              description: AnalysisState is the last analysis state
               type: object
             assessment:
+              description: AssessmentSummary returned by the last analyis
               properties:
                 conclusions:
+                  description: Overall summary based on all success criteria
                   items:
                     type: string
                   type: array
               type: object
             conditions:
+              description: Conditions the latest available observations of a resource's
+                current state. +patchMergeKey=type +patchStrategy=merge
               items:
                 properties:
                   lastTransitionTime:
+                    description: LastTransitionTime is the last time the condition
+                      transitioned from one status to another. We use VolatileTime
+                      in place of metav1.Time to exclude this from creating equality.Semantic
+                      differences (all other things held constant).
                     type: string
                   message:
+                    description: A human readable message indicating details about
+                      the transition.
                     type: string
                   reason:
+                    description: The reason for the condition's last transition.
                     type: string
                   severity:
+                    description: Severity with which to treat failures of this type
+                      of condition. When this is not specified, it defaults to Error.
                     type: string
                   status:
+                    description: Status of the condition, one of True, False, Unknown.
+                      +required
                     type: string
                   type:
+                    description: Type of condition. +required
                     type: string
                 required:
                 - type
@@ -227,21 +297,31 @@ spec:
                 type: object
               type: array
             currentIteration:
+              description: CurrentIteration is the current iteration number
               format: int64
               type: integer
             endTimestamp:
+              description: EndTimestamp is the timestamp when experiment completes
               type: string
             grafanaURL:
+              description: GrafanaURL is the url to the Grafana Dashboard
               type: string
             lastIncrementTime:
+              description: LastIncrementTime is the last time the traffic has been
+                incremented
               format: date-time
               type: string
             observedGeneration:
+              description: ObservedGeneration is the 'Generation' of the Service that
+                was last processed by the controller.
               format: int64
               type: integer
             startTimestamp:
+              description: StartTimestamp is the timestamp when the experiment starts
               type: string
             trafficSplitPercentage:
+              description: TrafficSplit tells the current traffic spliting between
+                baseline and candidate
               properties:
                 baseline:
                   format: int64
@@ -330,8 +410,20 @@ rules:
   - services/status
   verbs:
   - get
-  - update
-  - patch
+- apiGroups:
+  - serving.knative.dev
+  resources:
+  - revisions
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - serving.knative.dev
+  resources:
+  - revisions/status
+  verbs:
+  - get
 - apiGroups:
   - apps
   resources:
