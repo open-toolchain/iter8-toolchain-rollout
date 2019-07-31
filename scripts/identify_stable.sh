@@ -17,11 +17,12 @@ if (( ${NUM_DR} == 0 )); then
 else
   DEPLOY_SELECTOR=$(kubectl --namespace ${CLUSTER_NAMESPACE} get dr --selector=iter8.tools/role=stable -o json | jq -r '.items[0].spec.subsets[] | select(.name == "stable") | .labels | to_entries[] | "\(.key)=\(.value)"' | paste -sd',' -)
 fi
-
+echo "DEPLOY_SELECTOR=$DEPLOY_SELECTOR"
 NUM_DEPLOY=$(kubectl --namespace ${CLUSTER_NAMESPACE} get deploy --selector=${DEPLOY_SELECTOR} --output json | jq '.items | length')
 
 if (( ${NUM_DEPLOY} == 0 )); then
   BASELINE_DEPLOYMENT_NAME=
 else
-  BASELINE_DEPLOYMENT_NAME=$(kubectl --namespace ${CLUSTER_NAMESPACE} get deployment --selector=${DEPLOY_SELECTOR} --output jsonpath='{.items[0].metadata.name}') echo "${BASELINE_DEPLOYMENT_NAME}" 
+  BASELINE_DEPLOYMENT_NAME=$(kubectl --namespace ${CLUSTER_NAMESPACE} get deployment --selector=${DEPLOY_SELECTOR} --output jsonpath='{.items[0].metadata.name}') 
 fi
+echo "BASELINE_DEPLOYMENT_NAME=${BASELINE_DEPLOYMENT_NAME}" 

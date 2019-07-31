@@ -96,7 +96,7 @@ services:
   grafana:
     service_id: customtool
     parameters:
-      type: grafana
+      type: Grafana
       lifecyclePhase: "MANAGE"
       name: Canary Dashboard
       dashboard_url: GRAFANA_URL/d/eXPEaNnZz/iter8-application-metrics
