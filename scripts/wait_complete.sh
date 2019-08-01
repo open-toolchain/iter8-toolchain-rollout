@@ -80,7 +80,7 @@ while (( timePassedS < ${DURATION} )); do
     elif [[ "${_version_to_delete}" == "$CANDIDATE" ]]; then _deployment_to_delete=${_candidate};
     else _deployment_to_delete=${_candidate}; fi
     if [[ -n ${_deployment_to_delete} ]]; then
-      echo kubectl --namespace ${CLUSTER_NAMESPACE} delete deployment ${_deployment_to_delete} --ignore-not-found
+      kubectl --namespace ${CLUSTER_NAMESPACE} delete deployment ${_deployment_to_delete} --ignore-not-found
     fi
 
     # In order to determine the status of this step, we need to know if the version we deleted

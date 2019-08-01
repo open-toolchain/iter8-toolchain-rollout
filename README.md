@@ -2,41 +2,42 @@
 
 ### Develop and canary test your Kubernetes application using Istio
 
-This DevOps process illustrates how to use a parallel Git branch (canary) to develop a new version of an application, letting the pipelines drive the canary rollout using Istio features. In particular, the process is automatically inferring the Kubernetes deployment manifest to drive Istio routing without needed developer to intervene and maintain separate copies of these.
+This Devops process illustrates how to deploy a new version of an application using a canary rollout. In particular, this process leverages iter8 to automatically re-configure Istio over time to gradually shift traffic from the current version to a candidate version. Iter8 compares metrics and error rates between the two versions, rolling back if they are not with the specified tolerances.
 
-The sample application is using Docker and Go and is adapted from [guestbook](https://github.com/IBM/guestbook). It includes a DevOps toolchain that is preconfigured for canary testing (branch 'canary'), continuous delivery with Vulnerability Advisor, source control, issue tracking, and online editing, and deployment to the IBM Cloud Kubernetes Service.
+The sample application is using Docker and Java and is adapted from the [reviews](https://github.com/istio/istio/tree/master/samples/bookinfo/src/reviews) microservice in [bookinfo](https://github.com/istio/istio/tree/master/samples/bookinfo/src). It incliudes a DevOps toolchain that is preconfigured for canary rollout, continuous delivery with Vulnerability Advisor, source control, issue tracking, online editing, and deployment to the IBM Cloud Kubernetes Service.
 
-Application code is stored in source control, along with its Dockerfile and its Kubernetes deployment script.
+Application code is stored in source control, along with its Dockerfile, its Kubernetes deployment script (described using [kustomize](https://kustomize.io/)) and an [iter8]() experiment template.
 The target cluster is configured during toolchain setup (using an IBM Cloud API key and cluster name). You can later change these by modifying the Delivery Pipeline configuration.
 Any code change to the master branch in the Git repo will automatically be built, validated and deployed into the Kubernetes cluster.
 
-Changes to the `canary` branch will be rolled out in parallel, leveraging istio traffic management ability.
+----> **FIX THIS** <----
 ![Icon](./.bluemix/toolchain.png)
 
 ### To get started, click this button:
 [![Create Toolchain](https://cloud.ibm.com/devops/graphics/create_toolchain_button.png)](https://cloud.ibm.com/devops/setup/deploy/?repository=https%3A//github.com/kalantar/canary-testing-istio-toolchain&env_id=ibm:yp:us-south)
 
-DISCLAIMER: This toolchain uses [Istio](https://istio.io/) 1.1, which requires more resources than available in IKS lite clusters, please ensure you target a standard cluster instead. 
+DISCLAIMER: This toolchain uses [Istio](https://istio.io/) 1.1.5+, which requires more resources than available in IKS lite clusters, please ensure you target a standard cluster instead.
 
 ### Steps
 
-Learn how to canary test an application using Istio using 2 branches: 
-* master for mainstream development and rollout of new versions (or emergency fixes)
-* canary branch for A/B testing a long lasting feature branch.
+Learn how to implement canary rollout of an application using Istio and iter8:
 
 * At the beginning of the scenario, you have master pipeline deploy to prod with application "v1".
-* View the `stable` pipeline execution, find the deployed application (log in deploy stage) 
-* Switch to developing feature in canary branch. Canary branch is already up in repo, with a tiny code change (just updated header to "v2"), but could further enhance it at will.
-* Deploy the canary by triggering the `canary` pipeline. Will build and deploy the application in parallel of the master one, modifying the deployment manifests automatically, without needing developer to manage multiple versions, and configuring Istio routing rules for user (visible in the logs)
-* Dark deployment is configuring the routing to only expose the canary app to Firefox users, next stage deploy is exposing the canary to 50% user.
-* Once happy with the new behavior, create a pull request from canary->master, run the last stage (finalize) to collapse the canary launch, as the feature got merged into the master branch and redeployed properly.
+* View the `stable` pipeline execution, find the deployed application (log in deploy stage)
+* Once new function has been developed, create a pull request against master and merge it into the master branch. The `stable` pipeline will build and initiate a canary rollout of the new version of the service.
+
+* If the canary rollout has been configured to take more than an hour (in the iter8 experiment template file), the _ROLLOUT CANDIDATE_ stage will terminate before the rollout is complete. Once it completes, the unused version will remain deployed and unused -- Istio will be configured to send traffic to only one deployment. This needs to be manually cleaned up.
+
+* Once the rollout has started, it can be manually short-circuited by rolling forward or backward using the _IMMEDIATE ROLLBACK_ or _IMMEDIATE ROLLFORWARD_ stages. This can most reliably be done by selecting the `Send To` tool on the _ROLLOUT CANDIDATE_ stage.
+
 
 ---
 ### Learn more 
 
 * Learn about [Istio](https://istio.io/)
+* Learn abut [iter8](https://github.com/iter8-tools/docs)
 * Blog [Continuously deliver your app to Kubernetes with Bluemix](https://www.ibm.com/blogs/bluemix/2017/07/continuously-deliver-your-app-to-kubernetes-with-bluemix/)
-* Step by step [tutorial](https://www.ibm.com/cloud/garage/tutorials/use-canary-testing-in-kubernetes-using-istio-toolchain)
+* ----> Step by step [tutorial](https://www.ibm.com/cloud/garage/tutorials/use-canary-testing-in-kubernetes-using-istio-toolchain) <-----
 * [Getting started with IBM Cloud clusters](https://cloud.ibm.com/docs/containers?topic=containers-getting-started)
 * [Getting started with toolchains](https://cloud.ibm.com/devops/getting-started)
 * [Documentation](https://cloud.ibm.com/docs/services/ContinuousDelivery?topic=ContinuousDelivery-getting-started&pos=2)

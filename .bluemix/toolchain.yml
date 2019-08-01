@@ -67,38 +67,38 @@ services:
           PROD_CLUSTER_NAME: '{{form.pipeline.parameters.prod-cluster-name}}'
           PROD_CLUSTER_NAMESPACE: '{{form.pipeline.parameters.prod-cluster-namespace}}'
         execute: true
-  build_canary:
-    service_id: pipeline
-    parameters:
-      services:
-        - repo
-      name: 'canary'
-      ui-pipeline: true
-      configuration:
-        content:
-          $text: pipeline_canary.yml
-        env:
-          GIT_REPO: repo
-          GIT_BRANCH: canary
-          DOCKER_ROOT: .
-          DEPLOYMENT_FILE: kustomize/deployment.yaml
-          CF_APP_NAME: '{{form.pipeline.parameters.app-name}}'
-          REGISTRY_REGION_ID: '{{form.pipeline.parameters.registry-region}}'
-          REGISTRY_NAMESPACE: '{{form.pipeline.parameters.registry-namespace}}'
-          API_KEY: '{{form.pipeline.parameters.api-key}}'
-          PROD_REGION_ID: '{{form.pipeline.parameters.prod-region}}'
-          PROD_RESOURCE_GROUP: '{{form.pipeline.parameters.prod-resource-group}}'
-          PROD_CLUSTER_NAME: '{{form.pipeline.parameters.prod-cluster-name}}'
-          PROD_CLUSTER_NAMESPACE: '{{form.pipeline.parameters.prod-cluster-namespace}}'
-        execute: false
+  # build_canary:
+  #   service_id: pipeline
+  #   parameters:
+  #     services:
+  #       - repo
+  #     name: 'canary'
+  #     ui-pipeline: true
+  #     configuration:
+  #       content:
+  #         $text: pipeline_canary.yml
+  #       env:
+  #         GIT_REPO: repo
+  #         GIT_BRANCH: canary
+  #         DOCKER_ROOT: .
+  #         DEPLOYMENT_FILE: kustomize/deployment.yaml
+  #         CF_APP_NAME: '{{form.pipeline.parameters.app-name}}'
+  #         REGISTRY_REGION_ID: '{{form.pipeline.parameters.registry-region}}'
+  #         REGISTRY_NAMESPACE: '{{form.pipeline.parameters.registry-namespace}}'
+  #         API_KEY: '{{form.pipeline.parameters.api-key}}'
+  #         PROD_REGION_ID: '{{form.pipeline.parameters.prod-region}}'
+  #         PROD_RESOURCE_GROUP: '{{form.pipeline.parameters.prod-resource-group}}'
+  #         PROD_CLUSTER_NAME: '{{form.pipeline.parameters.prod-cluster-name}}'
+  #         PROD_CLUSTER_NAMESPACE: '{{form.pipeline.parameters.prod-cluster-namespace}}'
+  #       execute: false
   webide:
     service_id: orion
   grafana:
     service_id: customtool
     parameters:
-      type: Grafana
+      type: Canary
       lifecyclePhase: "MANAGE"
-      name: Canary Dashboard
+      name: Grafana Dashboard
       dashboard_url: GRAFANA_URL/d/eXPEaNnZz/iter8-application-metrics
       description: Grafana dashboard for canary tests
 
