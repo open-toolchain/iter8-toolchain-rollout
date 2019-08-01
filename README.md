@@ -6,7 +6,7 @@ This Devops process illustrates how to deploy a new version of an application us
 
 The sample application is using Docker and Java and is adapted from the [reviews](https://github.com/istio/istio/tree/master/samples/bookinfo/src/reviews) microservice in [bookinfo](https://github.com/istio/istio/tree/master/samples/bookinfo/src). It incliudes a DevOps toolchain that is preconfigured for canary rollout, continuous delivery with Vulnerability Advisor, source control, issue tracking, online editing, and deployment to the IBM Cloud Kubernetes Service.
 
-Application code is stored in source control, along with its Dockerfile, its Kubernetes deployment script (described using [kustomize](https://kustomize.io/)) and an [iter8]() experiment template.
+Application code is stored in source control, along with its Dockerfile, its Kubernetes deployment script (described using [kustomize](https://kustomize.io/)) and an [iter8](https://github.com/iter8-tools/docs) experiment template.
 The target cluster is configured during toolchain setup (using an IBM Cloud API key and cluster name). You can later change these by modifying the Delivery Pipeline configuration.
 Any code change to the master branch in the Git repo will automatically be built, validated and deployed into the Kubernetes cluster.
 

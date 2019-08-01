@@ -142,7 +142,7 @@ stages:
 
       # Check Istio installation in target cluster
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/iter8_check_install.sh")
-- name: PREPARE CANDIDATE ROLLOUT
+- name: ROLLOUT CANDIDATE
   inputs:
   - type: job
     stage: BUILD
@@ -156,6 +156,9 @@ stages:
   - name: CLUSTER_NAMESPACE
     value: ${PROD_CLUSTER_NAMESPACE}
     type: text
+  - name: APP_URL
+    value: undefined
+    type: text   
   - name: PATCH_FILE
     value: kustomize/patch.yaml
     type: text
@@ -214,27 +217,6 @@ stages:
       echo "CANARY_DEPLOYMENT_NAME=$CANARY_DEPLOYMENT_NAME"
       ON_SUCCESS=candidate
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/create_experiment.sh")
-- name: DEPLOY CANDIDATE RELEASE
-  inputs:
-  - type: job
-    stage: BUILD
-    job: Build Docker image
-  triggers:
-  - type: stage
-  properties:
-  - name: buildprops
-    value: build.properties
-    type: file
-  - name: CLUSTER_NAMESPACE
-    value: ${PROD_CLUSTER_NAMESPACE}
-    type: text
-  - name: APP_URL
-    value: undefined
-    type: text   
-  - name: PATCH_FILE
-    value: kustomize/patch.yaml
-    type: text
-  jobs:
   - name: Pre-deploy check
     type: deployer
     target:
@@ -296,21 +278,6 @@ stages:
 
       # Check liveness and readiness probes to confirm application is healthy
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_health.sh")
-- name: FINALIZE CANDIDATE ROLLOUT
-  inputs:
-  - type: job
-    stage: PREPARE CANDIDATE ROLLOUT
-    job: Prepare For Rollout
-  triggers:
-  - type: stage
-  properties:
-  - name: buildprops
-    value: build.properties
-    type: file
-  - name: CLUSTER_NAMESPACE
-    value: ${PROD_CLUSTER_NAMESPACE}
-    type: text
-  jobs:
   - name: Delete Deployment
     type: deployer
     target:
@@ -331,7 +298,7 @@ stages:
 - name: IMMEDIATE ROLLBACK
   inputs:
   - type: job
-    stage: PREPARE CANDIDATE ROLLOUT
+    stage: ROLLOUT CANDIDATE
     job: Prepare For Rollout
   triggers:
   - type: stage
@@ -368,7 +335,7 @@ stages:
 - name: IMMEDIATE ROLLFORWARD
   inputs:
   - type: job
-    stage: PREPARE CANDIDATE ROLLOUT
+    stage: ROLLOUT CANDIDATE
     job: Prepare For Rollout
   triggers:
   - type: stage
