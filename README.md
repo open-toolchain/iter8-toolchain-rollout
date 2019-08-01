@@ -23,8 +23,12 @@ DISCLAIMER: This toolchain uses [Istio](https://istio.io/) 1.1.5+, which require
 Learn how to implement canary rollout of an application using Istio and iter8:
 
 * At the beginning of the scenario, you have master pipeline deploy to prod with application "v1".
-* View the `stable` pipeline execution, find the deployed application (log in deploy stage)
+
 * Once new function has been developed, create a pull request against master and merge it into the master branch. The `stable` pipeline will build and initiate a canary rollout of the new version of the service.
+
+* A successful canary rollout relies on the ability to compare the currently deployed version to the candidate version as traffic is shifted from one to the other. This assumes the service is under load. If experimenting, apply load with a load generator or with a tool such as `watch`, for example:
+
+    watch -x -n 0.1 curl -Is service_url
 
 * If the canary rollout has been configured to take more than an hour (in the iter8 experiment template file), the _ROLLOUT CANDIDATE_ stage will terminate before the rollout is complete. Once it completes, the unused version will remain deployed and unused -- Istio will be configured to send traffic to only one deployment. This needs to be manually cleaned up.
 
