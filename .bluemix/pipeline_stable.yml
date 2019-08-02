@@ -142,7 +142,7 @@ stages:
 
       # Check Istio installation in target cluster
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/iter8_check_install.sh")
-- name: ROLLOUT CANDIDATE
+- name: PREPARE CANDIDATE ROLLOUT
   inputs:
   - type: job
     stage: BUILD
@@ -153,15 +153,6 @@ stages:
   - name: buildprops
     value: build.properties
     type: file
-  - name: CLUSTER_NAMESPACE
-    value: ${PROD_CLUSTER_NAMESPACE}
-    type: text
-  - name: APP_URL
-    value: undefined
-    type: text   
-  - name: PATCH_FILE
-    value: kustomize/patch.yaml
-    type: text
   - name: EXPERIMENT_TEMPLATE_FILE
     value: iter8/experiment.yaml
     type: text
@@ -192,6 +183,33 @@ stages:
       #   append to existing build.properties if already defined
       cp build.properties $ARCHIVE_DIR/ || :
       echo "EXPERIMENT_NAME=${EXPERIMENT_NAME}" >> $ARCHIVE_DIR/build.properties
+- name: ROLLOUT CANDIDATE
+  inputs:
+  - type: job
+    stage: BUILD
+    job: Build Docker image
+  triggers:
+  - type: stage
+  properties:
+  - name: buildprops
+    value: build.properties
+    type: file
+  - name: CLUSTER_NAMESPACE
+    value: ${PROD_CLUSTER_NAMESPACE}
+    type: text
+  - name: APP_URL
+    value: undefined
+    type: text   
+  - name: PATCH_FILE
+    value: kustomize/patch.yaml
+    type: text
+  - name: EXPERIMENT_TEMPLATE_FILE
+    value: iter8/experiment.yaml
+    type: text
+  - name: EXPERIMENT_NAME
+    value: 
+    type: text
+  jobs:
   - name: Configure Rollout
     type: deployer
     target:
@@ -261,6 +279,9 @@ stages:
       # Create canary deployment yaml
       USE_ISTIO_GATEWAY=true
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/deploy_kubectl.sh")
+      echo "Canary Dashboard"
+      echo "================"
+      echo "$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}')"
   - name: Health check
     type: deployer
     target:
@@ -299,7 +320,7 @@ stages:
 - name: IMMEDIATE ROLLBACK
   inputs:
   - type: job
-    stage: ROLLOUT CANDIDATE
+    stage: PREPARE CANDIDATE ROLLOUT
     job: Prepare For Rollout
   triggers:
   - type: stage
@@ -336,7 +357,7 @@ stages:
 - name: IMMEDIATE ROLLFORWARD
   inputs:
   - type: job
-    stage: ROLLOUT CANDIDATE
+    stage: PREPARE CANDIDATE ROLLOUT
     job: Prepare For Rollout
   triggers:
   - type: stage

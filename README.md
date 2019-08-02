@@ -30,16 +30,18 @@ Learn how to implement canary rollout of an application using Istio and iter8:
 
     watch -x -n 0.1 curl -Is service_url
 
+* Inspect metrics for the canary via the canary dashboard. A direct URL can be found at the end of the log for the _Deploy to Kubernetes_ step of the _ROLLOUT_CANDIDATE_ stage.
+
 * If the canary rollout has been configured to take more than an hour (in the iter8 experiment template file), the _ROLLOUT CANDIDATE_ stage will terminate before the rollout is complete. Once it completes, the unused version will remain deployed and unused -- Istio will be configured to send traffic to only one deployment. This needs to be manually cleaned up.
 
-* Once the rollout has started, it can be manually short-circuited by rolling forward or backward using the _IMMEDIATE ROLLBACK_ or _IMMEDIATE ROLLFORWARD_ stages. This can most reliably be done by selecting the `Send To` tool on the _ROLLOUT CANDIDATE_ stage.
+* Once the rollout has started, it can be manually short-circuited by rolling forward or backward using the _IMMEDIATE ROLLBACK_ or _IMMEDIATE ROLLFORWARD_ stages. This can most reliably be done using the `Send To` tool on the _PREPARE CANDIDATE ROLLOUT_ stage.
 
 
 ---
 ### Learn more 
 
 * Learn about [Istio](https://istio.io/)
-* Learn abut [iter8](https://github.com/iter8-tools/docs)
+* Learn about [iter8](https://github.com/iter8-tools/docs)
 * Blog [Continuously deliver your app to Kubernetes with Bluemix](https://www.ibm.com/blogs/bluemix/2017/07/continuously-deliver-your-app-to-kubernetes-with-bluemix/)
 * ----> Step by step [tutorial](https://www.ibm.com/cloud/garage/tutorials/use-canary-testing-in-kubernetes-using-istio-toolchain) <-----
 * [Getting started with IBM Cloud clusters](https://cloud.ibm.com/docs/containers?topic=containers-getting-started)
