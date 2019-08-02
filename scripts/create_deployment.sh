@@ -29,6 +29,7 @@ mv kustomize_*_${opsys}_amd64 /usr/local/bin/kustomize
 chmod u+x /usr/local/bin/kustomize
 
 # Modify patch file using $IMAGE_TAG as VERSION
+PIPELINE_IMAGE_URL="$REGISTRY_URL/$REGISTRY_NAMESPACE/$IMAGE_NAME:$IMAGE_TAG"
 sed -i -e "s#iter8/reviews:istio-VERSION#$PIPELINE_IMAGE_URL#" ${PATCH_FILE}
 sed -i -e "s#VERSION#${IMAGE_TAG}#g" ${PATCH_FILE}
 cat ${PATCH_FILE}

@@ -186,8 +186,8 @@ stages:
 - name: ROLLOUT CANDIDATE
   inputs:
   - type: job
-    stage: BUILD
-    job: Build Docker image
+    stage: PREPARE CANDIDATE ROLLOUT
+    job: Prepare For Rollout
   triggers:
   - type: stage
   properties:
