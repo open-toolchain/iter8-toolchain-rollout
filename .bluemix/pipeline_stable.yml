@@ -206,9 +206,6 @@ stages:
   - name: EXPERIMENT_TEMPLATE_FILE
     value: iter8/experiment.yaml
     type: text
-  - name: EXPERIMENT_NAME
-    value: 
-    type: text
   jobs:
   - name: Configure Rollout
     type: deployer
@@ -281,7 +278,7 @@ stages:
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/deploy_kubectl.sh")
       echo "Canary Dashboard"
       echo "================"
-      echo "$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}')"
+      kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}'
   - name: Health check
     type: deployer
     target:
