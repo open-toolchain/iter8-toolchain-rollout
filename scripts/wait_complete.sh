@@ -137,7 +137,7 @@ while (( timePassedS < ${DURATION} )); do
       log 'ROLLOUT CANDIDATE: Experiment failed'
       exit 1
 
-    # Handle experiment FAILURE
+    # Handle experiment SUCCESS
     else
       # called from IMMEDIATE ROLLBACK
       if [[ -n ${FORCE_TERMINATION} ]] && [[ "${_assessment}" == "${OVERRIDE_FAILURE}" ]]; then
