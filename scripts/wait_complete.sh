@@ -119,7 +119,7 @@ while (( timePassedS < ${DURATION} )); do
     echo "_reason=${_reason}"
 
     # Handle experiment FAILURE
-    if [[ -n ${_reason} ]] && [[ "${_reason}" ==  "^ExperimentFailure:.*" ]]; then
+    if [[ -n ${_reason} ]] && [[ "${_reason}" =~ ^ExperimentFailure:.* ]]; then
 
       # called from IMMEDIATE ROLLBACK
       if [[ -n ${FORCE_TERMINATION} ]] && [[ "${_assessment}" == "${OVERRIDE_FAILURE}" ]]; then
