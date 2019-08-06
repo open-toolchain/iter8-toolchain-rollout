@@ -44,13 +44,13 @@ get_experiment_status() {
 }
 
 log() {
-  echo "${1}"
+  echo "$@"
   echo "       Reason: $(kubectl --namespace ${CLUSTER_NAMESPACE} \
     get experiment ${EXPERIMENT_NAME} \
     -o jsonpath='{.status.conditions[?(@.type=="Ready")].reason}')"
   echo "   Assessment: $(kubectl --namespace ${CLUSTER_NAMESPACE} \
     get experiment ${EXPERIMENT_NAME} \
-    -o jsonpath='{.status.assessment.conlusions}')"
+    -o jsonpath='{.status.assessment.conclusions}')"
 }
 
 startS=$(date +%s)
@@ -115,7 +115,7 @@ while (( timePassedS < ${DURATION} )); do
     # Read reason from experiment 
     _reason=$(kubectl --namespace ${CLUSTER_NAMESPACE} \
                 get experiment ${EXPERIMENT_NAME} \
-                --output jsonpath='{.status.conditions[?(@.type == 'Ready')].reason}')
+                --output jsonpath='{.status.conditions[?(@.type=="Ready")].reason}')
     echo "_reason=${_reason}"
 
     # Handle experiment FAILURE
@@ -123,37 +123,37 @@ while (( timePassedS < ${DURATION} )); do
 
       # called from IMMEDIATE ROLLBACK
       if [[ -n ${FORCE_TERMINATION} ]] && [[ "${_assessment}" == "${OVERRIDE_FAILURE}" ]]; then
-        log “IMMEDIATE ROLLBACK called: experiment successfully rolled back”
-        return 0
+        log 'IMMEDIATE ROLLBACK called: experiment successfully rolled back'
+        exit 0
       fi
 
       # called from IMMEDIATE ROLLFORWARD
       if [[ -n ${FORCE_TERMINATION} ]] && [[ "${_assessment}" == "${OVERRIDE_SUCCESS}" ]]; then
-        log “IMMEDIATE ROLLFORWARD called: experiment failed to rollforward”
-        return 1
+        log 'IMMEDIATE ROLLFORWARD called: experiment failed to rollforward'
+        exit 1
       fi
 
       # called from ROLLOUT CANDIDATE
-      log “ROLLOUT CANDIDATE: Experiment failed”
-      return 1
+      log 'ROLLOUT CANDIDATE: Experiment failed'
+      exit 1
 
     # Handle experiment FAILURE
     else
-      // called from IMMEDIATE ROLLBACK
+      # called from IMMEDIATE ROLLBACK
       if [[ -n ${FORCE_TERMINATION} ]] && [[ "${_assessment}" == "${OVERRIDE_FAILURE}" ]]; then
-        log “IMMEDIATE ROLLBACK called: experiment not rolled back; it successfully completed before rollback could be implemented”
-        return 1
+        log 'IMMEDIATE ROLLBACK called: experiment not rolled back; it successfully completed before rollback could be implemented'
+        exit 1
       fi
 
       # called from IMMEDIATE ROLLFORWARD
       if [[ -n ${FORCE_TERMINATION} ]] && [[ "${_assessment}" == "${OVERRIDE_SUCCESS}" ]]; then
-        log “IMMEDIATE ROLLFORWARD called: experiment successfully rolled forward”
-        return 0
+        log 'IMMEDIATE ROLLFORWARD called: experiment successfully rolled forward'
+        exit 0
       fi
 
       # called from ROLLOUT CANDIDATE
-      log “ROLLOUT CANDIDATE: Experiment succeeded”
-      return 0
+      log 'ROLLOUT CANDIDATE: Experiment succeeded'
+      exit 0
     fi
 
     # # In order to determine the status of this step, we need to know if the version we deleted
