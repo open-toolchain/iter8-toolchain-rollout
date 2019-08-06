@@ -38,7 +38,7 @@ spec:
       containers:
       - command:
         - /manager
-        image: "fabolive/iter8-controller:0.1.0"
+        image: "kalantar/iter8-controller:default"
         imagePullPolicy: Always
         name: manager
         env:

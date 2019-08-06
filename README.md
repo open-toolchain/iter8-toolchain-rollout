@@ -1,4 +1,4 @@
-# ![Icon](./.bluemix/istio-logo.png) Canary testing in Kubernetes using Istio
+# Canary testing in Kubernetes using **iter8**
 
 ### Rollout your Kubernetes application using canary testing with Istio and iter8
 

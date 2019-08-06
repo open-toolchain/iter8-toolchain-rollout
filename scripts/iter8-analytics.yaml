@@ -53,7 +53,7 @@ spec:
     spec:
       containers:
         - name: iter8-analytics
-          image: "fabolive/iter8-analytics:0.1.0"
+          image: "kalantar/iter8-analytics:default"
           imagePullPolicy: Always
           env:
             - name: ITER8_ANALYTICS_SERVER_PORT
