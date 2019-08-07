@@ -108,9 +108,15 @@ while (( timePassedS < ${DURATION} )); do
       exit 1
     fi
     if [[ -z ${FORCE_TERMINATION} ]] && [[ -n ${_assessment} ]] && [[ "${_assessment}" == "${OVERRIDE_FAILURE}" ]]; then
+      # This occurs if the spec.assessment field is patched external to the toolchain
+      # Since $FORCE_TERMINATION is not set, is in ROLLOUT CANDIDATE
+      # If $_assessment is override_failure --> fail
+      # Otherwise, let the remaining logic deal with it
       log "Experiment terminated (${_assessment}) unexpectedly in stage ${IDS_STAGE_NAME}"
       exit 1
     fi
+    # the other alternative, [[ "${_assessment}" == "${OVERRIDE_SUCCESS}" ]], occurs if a user
+    # manually (outside the toochain) overrides behavior. In this case
 
     # Read reason from experiment 
     _reason=$(kubectl --namespace ${CLUSTER_NAMESPACE} \
@@ -155,65 +161,6 @@ while (( timePassedS < ${DURATION} )); do
       log 'ROLLOUT CANDIDATE: Experiment succeeded'
       exit 0
     fi
-
-    # # In order to determine the status of this step, we need to know if the version we deleted
-    # # is the one we expected to delete.
-    # # In the normal case, we inspect the spec.trafficControl.onSuccess
-    # # In the exception case (a user forced a termination), we inspect spec.assessment
-    # # To decide which case to consider, we look to see if $FORCE_TERMINATION is defined
-    # _assessment=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.spec.assessment}')
-    # echo "       _assessment = ${_assessment}"
-    # if [[ -n $FORCE_TERMINATION ]]; then
-    #   if [[ -z ${_version_to_delete} ]]; then
-    #     echo "ERROR: Experiment ${EXPERIMENT_NAME} was manuually terminated but no version could be identified to delete."
-    #     exit 1
-    #   fi
-    #   if [[ -z ${_assessment} ]]; then
-    #     echo "ERROR: Expected experiment ${EXPERIMENT_NAME} to have been manually terminated but spec.assessment not set."
-    #     exit 1
-    #   fi
-    #   if [[ "${_assessment}" == "${OVERRIDE_SUCCESS}" ]]; then
-    #     if [[ "${_version_to_delete}" == "${BASELINE}" ]]; then exit 0;
-    #     else 
-    #       echo "ERROR: Experiment ${EXPERIMENT_NAME} was rolled forward. However ${CANDIDATE} version ${_deployment_to_delete} was deleted instead of baseline."
-    #       exit 1
-    #     fi
-    #   elif [[ "${_assessment}" == "${OVERRIDE_FAILURE}" ]]; then
-    #     if [[ "${_version_to_delete}" == "${CANDIDATE}" ]]; then exit 0;
-    #     else 
-    #       echo "ERROR: Experiment ${EXPERIMENT_NAME} was rolled back. However ${BASELINE} version ${_deployment_to_delete} was deleted instead of candidate."
-    #       exit 1
-    #     fi
-    #   else # unknown value in spec.assessment
-    #     echo "ERROR: Invalid value specified for spec.assessment in experiment ${EXPERIMENT_NAME}"
-    #     exit 1
-    #   fi
-    # fi
-
-    # if [[ -n ${_assessment} ]] && [[ -z ${FORCE_TERMINATION} ]]; then
-    #   echo "WARNING: spec.assessment unexpectedly set in experiment ${EXPERIMENT_NAME}"
-    # fi
-
-    # # if $FORCE_TERMINATION was not set look at _on_success
-    # _on_success=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.spec.trafficControl.onSuccess}')
-    # echo "       _on_success = ${_on_success}"
-    # if [[ -z ${_on_success} ]]; then _on_success="${CANDIDATE}"; fi
-    # if [[ "${_on_success}" == "$BASELINE" ]]; then
-    #   if [[ "${_version_to_delete}" == "${CANDIDATE}" ]]; then exit 0;
-    #   else
-    #     echo "ERROR: Desired final version is ${BASELINE} version ${_baseline}"
-    #     echo "       However, it (${_deployment_to_delete}) was deleted, perhaps due to manual intervention."
-    #     exit 1
-    #   fi
-    # elif [[ "${_on_success}" == "$CANDIDATE" ]]; then
-    #   if [[ "${_version_to_delete}" == "${BASELINE}" ]]; then exit 0;
-    #   else
-    #     echo "ERROR: Desired final version is ${CANDIDATE} version ${_candidate}"
-    #     echo "       However, it (${_deployment_to_delete}) was deleted, perhaps due to manual intervention."
-    #     exit 1
-    #   fi
-    # elif [[ "${_on_success}" == "both" ]]; then exit 0;
-    # fi
 
   fi # if [[ "${status}" == "True" ]]
 
