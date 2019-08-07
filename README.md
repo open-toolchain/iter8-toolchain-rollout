@@ -1,4 +1,4 @@
-# Canary testing in Kubernetes using **iter8**
+# Canary rollout in Kubernetes using **iter8**
 
 ### Rollout your Kubernetes application using canary testing with Istio and iter8
 
