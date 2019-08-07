@@ -107,7 +107,7 @@ while (( timePassedS < ${DURATION} )); do
       log "Attempt to terminate experiment in stage ${IDS_STAGE_NAME} but success/failure not specified."
       exit 1
     fi
-    if [[ -z ${FORCE_TERMINATION} ]] && [[ -n ${_assessment} ]]; then
+    if [[ -z ${FORCE_TERMINATION} ]] && [[ -n ${_assessment} ]] && [[ "${_assessment}" == "${OVERRIDE_FAILURE}" ]]; then
       log "Experiment terminated (${_assessment}) unexpectedly in stage ${IDS_STAGE_NAME}"
       exit 1
     fi
