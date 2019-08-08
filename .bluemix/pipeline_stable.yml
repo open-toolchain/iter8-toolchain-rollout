@@ -197,9 +197,9 @@ stages:
   - name: CLUSTER_NAMESPACE
     value: ${PROD_CLUSTER_NAMESPACE}
     type: text
-  - name: APP_URL
-    value: undefined
-    type: text   
+  - name: GRAFANA_URL
+    value: ${GRAFANA_URL}
+    type: text
   - name: PATCH_FILE
     value: kustomize/patch.yaml
     type: text
@@ -218,7 +218,7 @@ stages:
       #!/bin/bash
       # uncomment to debug the script
       # set -x
-
+      env
       # Identify canary deployment name from the deployment yaml
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/create_deployment.sh")
       CANARY_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)
