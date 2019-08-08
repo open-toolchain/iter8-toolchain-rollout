@@ -279,7 +279,7 @@ stages:
       sleep 5
       echo "Canary Dashboard"
       echo "================"
-      kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}'
+      echo $(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}')
   - name: Wait and Cleanup
     type: deployer
     target:
