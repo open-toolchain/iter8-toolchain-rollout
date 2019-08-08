@@ -66,7 +66,7 @@ services:
           PROD_RESOURCE_GROUP: '{{form.pipeline.parameters.prod-resource-group}}'
           PROD_CLUSTER_NAME: '{{form.pipeline.parameters.prod-cluster-name}}'
           PROD_CLUSTER_NAMESPACE: '{{form.pipeline.parameters.prod-cluster-namespace}}'
-          GRAFANA_URL: '{{services.grafana.parameters.dashboard_url}}'
+          CANARY_DASHBOARD: '{{services.grafana.parameters.dashboard_url}}'
         execute: true
   webide:
     service_id: orion
@@ -76,7 +76,7 @@ services:
       type: Canary
       lifecyclePhase: "MANAGE"
       name: Grafana Dashboard
-      dashboard_url: GRAFANA_URL
+      dashboard_url: http://localhost:3000
       description: Grafana dashboard for canary tests
 
 form:
