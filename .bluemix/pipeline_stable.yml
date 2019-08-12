@@ -276,10 +276,6 @@ stages:
       # Create canary deployment yaml
       USE_ISTIO_GATEWAY=true
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/deploy_kubectl.sh")
-      sleep 5
-      echo "Canary Dashboard"
-      echo "================"
-      echo $(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}')
   - name: Wait and Cleanup
     type: deployer
     target:
@@ -297,9 +293,6 @@ stages:
 
       # Check liveness and readiness probes to confirm application is healthy
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/wait_complete.sh")
-      echo "Canary Dashboard"
-      echo "================"
-      echo $(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}')
 - name: IMMEDIATE ROLLBACK
   inputs:
   - type: job
@@ -337,9 +330,6 @@ stages:
       # Wait for termination and delete canary deployment
       FORCE_TERMINATION=true
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/wait_complete.sh")
-      echo "Canary Dashboard"
-      echo "================"
-      echo $(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}')
 - name: IMMEDIATE ROLLFORWARD
   inputs:
   - type: job
@@ -376,6 +366,3 @@ stages:
       # Wait for termination and delete baseline deployment
       FORCE_TERMINATION=true
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/wait_complete.sh")
-      echo "Canary Dashboard"
-      echo "================"
-      echo $(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}')

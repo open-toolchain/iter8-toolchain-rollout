@@ -45,12 +45,15 @@ get_experiment_status() {
 
 log() {
   echo "$@"
-  echo "       Reason: $(kubectl --namespace ${CLUSTER_NAMESPACE} \
+  echo "          Reason: $(kubectl --namespace ${CLUSTER_NAMESPACE} \
     get experiment ${EXPERIMENT_NAME} \
-    -o jsonpath='{.status.conditions[?(@.type=="Ready")].reason}')"
-  echo "   Assessment: $(kubectl --namespace ${CLUSTER_NAMESPACE} \
+    --output jsonpath='{.status.conditions[?(@.type=="Ready")].reason}')"
+  echo "      Assessment: $(kubectl --namespace ${CLUSTER_NAMESPACE} \
     get experiment ${EXPERIMENT_NAME} \
-    -o jsonpath='{.status.assessment.conclusions}')"
+    --output jsonpath='{.status.assessment.conclusions}')"
+  echo "Canary Dashboard: $(kubectl --namespace ${CLUSTER_NAMESPACE} \
+    get experiment ${EXPERIMENT_NAME} \
+    --output jsonpath='{.status.grafanaURL}')"
 }
 
 startS=$(date +%s)
@@ -68,6 +71,7 @@ while (( timePassedS < ${DURATION} )); do
     echo "         _baseline = ${_baseline}"
     echo "        _candidate = ${_candidate}"
     if [[ "${_baseline}" == "${_candidate}" ]]; then
+      log "Stage ${IDS_STAGE_NAME} successfully completes"
       exit 0
     fi
 
@@ -81,7 +85,9 @@ while (( timePassedS < ${DURATION} )); do
     _version_to_delete=
     if (( ${_b_traffic} == 0 )); then _version_to_delete="$BASELINE";
     elif (( ${_c_traffic} == 0 )); then _version_to_delete="$CANDIDATE";
-    else exit 0 # don't delete a version since traffic is still split
+    else 
+      log "Stage ${IDS_STAGE_NAME} successfully completes"
+      exit 0 # don't delete a version since traffic is still split
     fi
     echo "_version_to_delete = ${_version_to_delete}"
 
@@ -169,8 +175,9 @@ done
 
 # We've waited ${DURATION} for the experiment to complete
 # It hasn't, so we log warning and fail. User becomes responsible for cleanup.
-echo "WARNING: Did not complete experiment in ${DURATION}"
+echo "WARNING: Stage ${IDS_STAGE_NAME} did not complete experiment in ${DURATION}"
 echo "   To check status of rollout: kubectl --namespace ${CLUSTER_NAMESPACE} experiment ${EXPERIMENT_NAME}"
 echo "   To delete original version (successful rollout), trigger stage IMMEDIATE ROLLFORWARD"
 echo "   To delete candidate version (failed rollout), trigger stage IMMEDIATE ROLLBACK"
+log "WARNING: Stage ${IDS_STAGE_NAME} did not complete experiment in ${DURATION}s"
 exit 1
