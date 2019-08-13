@@ -13,6 +13,8 @@
 
 # Constants
 MAX_DURATION=$(( 59*60 ))
+PHASE_SUCCEEDED="Succeeded"
+PHASE_FAILED="Failed"
 BASELINE="baseline"
 CANDIDATE="candidate"
 OVERRIDE_FAILURE="override_failure"
@@ -37,10 +39,14 @@ echo "        SLEEP_TIME = $SLEEP_TIME"
 echo " FORCE_TERMINATION = $FORCE_TERMINATION"
 echo "    IDS_STAGE_NAME = $IDS_STAGE_NAME"
 
-get_experiment_status() {
+get_experiment_phase() {
+# get_experiment_status() {
+  # kubectl --namespace ${CLUSTER_NAMESPACE} \
+  #   get experiment ${EXPERIMENT_NAME} \
+  #   -o jsonpath='{.status.conditions[?(@.type=="ExperimentCompleted")].status}'
   kubectl --namespace ${CLUSTER_NAMESPACE} \
     get experiment ${EXPERIMENT_NAME} \
-    -o jsonpath='{.status.conditions[?(@.type=="ExperimentCompleted")].status}'
+    -o jsonpath='{.status.phase}'
 }
 
 log() {
@@ -61,9 +67,11 @@ timePassedS=0$(( $(date +%s) - $startS ))
 while (( timePassedS < ${DURATION} )); do
   sleep ${SLEEP_TIME}
 
-  eStatus=$(get_experiment_status)
-  status=${eStatus:-"False"} # experiment might not have completed
-  if [[ "${status}" == "True" ]]; then
+  # eStatus=$(get_experiment_status)
+  phase=$(get_experiment_phase)
+  # status=${eStatus:-"False"} # experiment might not have completed
+  if [[ "${phase}" == "${PHASE_SUCCEEDED}" ]] || [[ "${phase}" == "${PHASE_FAILED}" ]]; then
+  # if [[ "${status}" == "True" ]]; then
     # experiment is done; delete appropriate version
     # if baseline and candidate are the same then don't delete anything
     _baseline=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.spec.targetService.baseline}')
@@ -131,7 +139,8 @@ while (( timePassedS < ${DURATION} )); do
     echo "_reason=${_reason}"
 
     # Handle experiment FAILURE
-    if [[ -n ${_reason} ]] && [[ "${_reason}" =~ ^ExperimentFailure:.* ]]; then
+    if [[ "${phase}" == "${PHASE_FAILED}" ]]; then
+    # if [[ -n ${_reason} ]] && [[ "${_reason}" =~ ^ExperimentFailure:.* ]]; then
 
       # called from IMMEDIATE ROLLBACK
       if [[ -n ${FORCE_TERMINATION} ]] && [[ "${_assessment}" == "${OVERRIDE_FAILURE}" ]]; then
@@ -168,7 +177,8 @@ while (( timePassedS < ${DURATION} )); do
       exit 0
     fi
 
-  fi # if [[ "${status}" == "True" ]]
+  # fi # if [[ "${status}" == "True" ]]
+  fi # if [[ "${phase}" == "${PHASE_SUCCEEDED}" ]] || [[ "${phase}" == "${PHASE_FAILED}" ]]; then
 
   timePassedS=$(( $(date +%s) - $startS ))
 done
