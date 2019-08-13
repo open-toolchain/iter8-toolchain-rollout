@@ -10,10 +10,10 @@ Application code is stored in source control, along with its Dockerfile, its Kub
 The target cluster is configured during toolchain setup (using an IBM Cloud API key and cluster name). You can later change these by modifying the Delivery Pipeline configuration.
 Any code change to the master branch in the Git repo will automatically be built, validated and deployed into the Kubernetes cluster.
 
-----> **FIX THIS** <----
-![Icon](./.bluemix/toolchain.png)
+![Icon](./canary_rollout.png)
 
 ### To get started, click this button:
+
 [![Create Toolchain](https://cloud.ibm.com/devops/graphics/create_toolchain_button.png)](https://cloud.ibm.com/devops/setup/deploy/?repository=https%3A//github.com/kalantar/canary-testing-istio-toolchain&env_id=ibm:yp:us-south)
 
 DISCLAIMER: This toolchain uses [Istio](https://istio.io/) 1.1.5+, which requires more resources than available in IKS lite clusters, please ensure you target a standard cluster instead.
@@ -30,15 +30,15 @@ Learn how to implement canary rollout of an application using Istio and iter8:
 
     watch -x -n 0.1 curl -Is service_url
 
-* Inspect metrics for the canary via the canary dashboard. A direct URL can be found at the end of the log for the _Deploy to Kubernetes_ step of the _ROLLOUT_CANDIDATE_ stage.
+* Inspect metrics for the canary via the canary dashboard. A direct URL can be found at the end of the log for the _Deploy to Kubernetes_ job of the _ROLLOUT_CANDIDATE_ stage. One the experiment is complete, the URL is updated in the log for the _Wait and Cleanup_ job.
 
 * If the canary rollout has been configured to take more than an hour (in the iter8 experiment template file), the _ROLLOUT CANDIDATE_ stage will terminate before the rollout is complete. Once it completes, the unused version will remain deployed and unused -- Istio will be configured to send traffic to only one deployment. This needs to be manually cleaned up.
 
 * Once the rollout has started, it can be manually short-circuited by rolling forward or backward using the _IMMEDIATE ROLLBACK_ or _IMMEDIATE ROLLFORWARD_ stages. This can most reliably be done using the `Send To` tool on the _PREPARE CANDIDATE ROLLOUT_ stage.s
 
-
 ---
-### Learn more 
+
+### Learn more
 
 * Learn about [iter8](https://github.com/iter8-tools/docs)
 * Learn about [Istio](https://istio.io/)
