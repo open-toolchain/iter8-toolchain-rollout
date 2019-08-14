@@ -407,16 +407,16 @@ If you created a registry namespace for this tutorial and you want to delete the
 
 In this tutorial, you learned how to take advantage of the IBM Cloud Continuous Delivery service to deploy an application to the IBM Cloud using a Kubernetes cluster. In addition, you deployed a second version of the application as a canary release to slowly roll out the change. For additional tutorials that focus on building cloud-native applications and Kubernetes, see the following:
 
-    Try the [Develop and test microservices on Cloud Foundry](https://www.ibm.com/cloud/garage/tutorials/use-develop-test-microservices-on-cloud-foundry-toolchain) toolchain.
+Try the [Develop and test microservices on Cloud Foundry](https://www.ibm.com/cloud/garage/tutorials/use-develop-test-microservices-on-cloud-foundry-toolchain) toolchain.
 
-    Try the [Kubernetes app with Helm](https://www.ibm.com/cloud/garage/toolchains/develop-kubernetes-app-with-helm-toolchain/0_1) toolchain.
+Try the [Kubernetes app with Helm](https://www.ibm.com/cloud/garage/toolchains/develop-kubernetes-app-with-helm-toolchain/0_1) toolchain.
 
 To learn more about microservices, see these resources:
 
-    [Getting started with a microservices architecture](https://www.ibm.com/cloud/garage/practices/code/microservices-practice/)
+[Getting started with a microservices architecture](https://www.ibm.com/cloud/garage/practices/code/microservices-practice/)
 
-    [Refactoring application code to microservices](https://www.ibm.com/cloud/garage/practices/code/refactor-to-microservices/)
+[Refactoring application code to microservices](https://www.ibm.com/cloud/garage/practices/code/refactor-to-microservices/)
 
-    [Refactoring to microservices: Moving your data](https://www.ibm.com/cloud/garage/practices/code/refactor-to-microservices-move-data)
+[Refactoring to microservices: Moving your data](https://www.ibm.com/cloud/garage/practices/code/refactor-to-microservices-move-data)
 
-    [Microservices architecture](https://www.ibm.com/cloud/garage/architectures/microservices)
+[Microservices architecture](https://www.ibm.com/cloud/garage/architectures/microservices)
