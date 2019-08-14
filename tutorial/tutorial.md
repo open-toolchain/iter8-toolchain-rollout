@@ -343,7 +343,7 @@ After the PREPARE CANDIDATE ROLLOUT stage runs, you should see a new experiment 
 
 Refresh the screen of the running application several times, You should see the color of the stars change as the different versions respond to the requests.
 
-![Red version](red-stars.png)
+![Red version](red-stars.png) and 
 ![Green version](green-stars.png)
 
 (12)
