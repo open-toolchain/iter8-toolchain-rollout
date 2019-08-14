@@ -43,16 +43,16 @@ services:
           $env.app_repo : 'https://github.com/kalantar/reviews'
       type: $env.type || 'clone'
       has_issues: true
-  build_stable:
+  build_rollout:
     service_id: pipeline
     parameters:
       services:
         - repo
-      name: 'stable'
+      name: 'rollout'
       ui-pipeline: true
       configuration:
         content:
-          $text: pipeline_stable.yml
+          $text: pipeline_rollout.yml
         env:
           GIT_REPO: repo
           GIT_BRANCH: master
