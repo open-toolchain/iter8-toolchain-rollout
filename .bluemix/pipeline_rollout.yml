@@ -145,7 +145,7 @@ stages:
 
       # Check Istio installation in target cluster
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/iter8_check_install.sh")
-  - name: Check bookinfo app config
+  - name: Check app config
     type: deployer
     target:
       api_key: ${API_KEY}
@@ -181,7 +181,7 @@ stages:
     value: 
     type: text
   jobs:
-  - name: Prepare For Rollout
+  - name: Prepare for Rollout
     type: builder
     curatedDockerImage: latest
     artifact_dir: ''
