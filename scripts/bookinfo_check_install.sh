@@ -23,10 +23,12 @@ metadata:
 EOF
 
 # Install bookinfo
-kubectl apply -f https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/bookinfo.yaml
+kubectl --namespace ${CLUSTER_NAMESPACE} \
+   apply -f https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/bookinfo.yaml
 
 # Expose bookinfo
-kubectl apply -f https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/bookinfo-gateway.yaml
+kubectl --namespace ${CLUSTER_NAMESPACE} \
+    apply -f https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/bookinfo-gateway.yaml
 
 LOADBALANCER=$(kubectl --namespace istio-system get service istio-ingressgateway --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 PORT=$(kubectl --namespace istio-system get service istio-ingressgateway --output jsonpath='{.spec.ports[?(@.targetPort==80)].nodePort}')
