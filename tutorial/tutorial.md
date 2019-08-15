@@ -126,9 +126,9 @@ Start the process of creating the "Canary rollout in Kubernetes using iter8" too
 
 [![Create Toolchain](https://cloud.ibm.com/devops/graphics/create_toolchain_button.png)](https://cloud.ibm.com/devops/setup/deploy/?repository=https%3A//github.com/kalantar/canary-testing-istio-toolchain&env_id=ibm:yp:us-south)
 
-(2) Review the toolchain diagram. This diagram shows each tool integration in its lifecycle phase in the toolchain.
+(2) Review the toolchain diagram. This diagram shows each tool to be integrated into the toolchain.
 
-<-- TBD picture --> 
+![Tools](tools.png)
 
 (3) Review the default information for the toolchain settings:
 
@@ -200,7 +200,7 @@ Click **Create**. Several steps run automatically to set up your toolchain:
 - The Git repo is cloned into your Git account
 - The rollout pipeline is triggered. The application is built, containerized, and deployed into production. The toolchain supports parallel continuous delivery and a rich set of tools.
 
-<-- TBD: picture -->
+![Deploy pipeline configuration](deploy-pipeline-config.png)
 
 ## Task 3: Explore the delivery pipeline
 
