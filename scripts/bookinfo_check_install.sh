@@ -12,7 +12,7 @@
 
 # Input env variables from pipeline job
 
-Create namespace
+# Create namespace
 cat <EOF | kubectl apply -f
 apiVersion: v1
 kind: Namespace
