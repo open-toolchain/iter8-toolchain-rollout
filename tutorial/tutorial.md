@@ -180,7 +180,8 @@ In the **Cluster namespace** field, use an explicit namespace in the cluster as 
 
 In the previous steps, you provided only the names for these resources. The toolchain automatically creates the matching resources for you. If the resources exist, they are reused.
 
-![Toolchain](toolchain.png)
+![Deploy pipeline configuration](deploy-pipeline-config.png)
+
 
 **Important:** Be sure to enter the proper API key, cluster name, and valid registry namespace so that you don't collide with another user's work. Failure to do so can result in failure in pipeline setup. If your pipeline setup fails, delete the toolchain and try again.
 
@@ -200,7 +201,7 @@ Click **Create**. Several steps run automatically to set up your toolchain:
 - The Git repo is cloned into your Git account
 - The rollout pipeline is triggered. The application is built, containerized, and deployed into production. The toolchain supports parallel continuous delivery and a rich set of tools.
 
-![Deploy pipeline configuration](deploy-pipeline-config.png)
+![Toolchain](toolchain.png)
 
 ## Task 3: Explore the delivery pipeline
 

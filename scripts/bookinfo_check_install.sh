@@ -12,21 +12,21 @@
 
 # Input env variables from pipeline job
 
-# Create namespace
-# cat <EOF | kubectl apply -f
-# apiVersion: v1
-# kind: Namespace
-# metadata:
-#   name: ${CLUSTER_NAMESPACE}
-#   labels:
-#     istio-injection: enabled
-# EOF
+Create namespace
+cat <EOF | kubectl apply -f
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${CLUSTER_NAMESPACE}
+  labels:
+    istio-injection: enabled
+EOF
 
-# # Install bookinfo
-# kubectl apply -f https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/bookinfo.yaml
+# Install bookinfo
+kubectl apply -f https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/bookinfo.yaml
 
-# # Expose bookinfo
-# kubectl apply -f https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/bookinfo-gateway.yaml
+# Expose bookinfo
+kubectl apply -f https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/bookinfo-gateway.yaml
 
 LOADBALANCER=$(kubectl --namespace istio-system get service istio-ingressgateway --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 PORT=$(kubectl --namespace istio-system get service istio-ingressgateway --output jsonpath='{.spec.ports[?(@.targetPort==80)].nodePort}')
