@@ -208,7 +208,7 @@ stages:
   inputs:
   - type: job
     stage: PREPARE CANDIDATE ROLLOUT
-    job: Prepare For Rollout
+    job: Prepare for Rollout
   triggers:
   - type: stage
   properties:
@@ -322,7 +322,7 @@ stages:
   inputs:
   - type: job
     stage: PREPARE CANDIDATE ROLLOUT
-    job: Prepare For Rollout
+    job: Prepare for Rollout
   triggers:
   - type: stage
     enabled: false
@@ -359,7 +359,7 @@ stages:
   inputs:
   - type: job
     stage: PREPARE CANDIDATE ROLLOUT
-    job: Prepare For Rollout
+    job: Prepare for Rollout
   triggers:
   - type: stage
     enabled: false
