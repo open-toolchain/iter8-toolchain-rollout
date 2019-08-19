@@ -98,6 +98,9 @@ stages:
   - type: job
     stage: BUILD
     job: Build Docker image
+  - name: CANARY_DASHBOARD
+    value: ${CANARY_DASHBOARD}
+    type: text
   triggers:
   - type: stage
   properties:
@@ -162,6 +165,8 @@ stages:
       #    source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/grafana_check_install.sh")
 
       # Check Istio installation in target cluster
+      GRAFANA_URL=${CANARY_DASHBOARD} \
+      DASHBOARD_DEFN=scripts/istio.json \
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/grafana_check_install.sh")
   - name: Check app config
     type: deployer
