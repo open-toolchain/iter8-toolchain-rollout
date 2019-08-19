@@ -145,6 +145,24 @@ stages:
 
       # Check Istio installation in target cluster
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/iter8_check_install.sh")
+  - name: Check dashboard config
+    type: deployer
+    target:
+      api_key: ${API_KEY}
+      region_id: ${PROD_REGION_ID}
+      resource_group: ${PROD_RESOURCE_GROUP}
+      kubernetes_cluster: ${PROD_CLUSTER_NAME}
+    script: |
+      #!/bin/bash
+      # uncomment to debug the script
+      # set -x
+      # copy the script below into your app code repo (e.g. ./scripts/bookinfo_check_install.sh) and 'source' it from your pipeline job
+      #    source ./scripts/grafana_check_install.sh
+      # alternatively, you can source it from online script:
+      #    source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/grafana_check_install.sh")
+
+      # Check Istio installation in target cluster
+      source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/grafana_check_install.sh")
   - name: Check app config
     type: deployer
     target:
@@ -273,10 +291,6 @@ stages:
       # image registry (using an IBM Cloud API Key). It also configures Helm Tiller service to later perform a deploy with Helm.
       touch ${DEPLOYMENT_FILE}
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_predeploy_kubectl.sh")
-      sleep 5
-      echo "Canary Dashboard: $(kubectl --namespace ${CLUSTER_NAMESPACE} \
-        get experiment ${EXPERIMENT_NAME} \
-        --output jsonpath='{.status.grafanaURL}')"
   - name: Deploy to Kubernetes
     type: deployer
     target:
@@ -301,6 +315,9 @@ stages:
       # Create canary deployment yaml
       USE_ISTIO_GATEWAY=true
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/deploy_kubectl.sh")
+      echo "Canary Dashboard: $(kubectl --namespace ${CLUSTER_NAMESPACE} \
+        get experiment ${EXPERIMENT_NAME} \
+        --output jsonpath='{.status.grafanaURL}')"
   - name: Wait and Cleanup
     type: deployer
     target:
