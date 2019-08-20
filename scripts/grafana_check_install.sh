@@ -17,19 +17,20 @@ if [[ "$status" == "200" ]]; then
     $GRAFANA_URL/api/dashboards/uid/$DASHBOARD_UID \
   | jq '.dashboard.version' \
   )
+  echo "DASHBOARD_VERSION=$DASHBOARD_VERSION"
+  echo "{ \"meta\": $(curl -s --header 'Accept: application/json' $GRAFANA_URL/api/dashboards/uid/$DASHBOARD_UID | jq '.meta'), \"dashboard\": $(cat $DASHBOARD_DEFN) }" | jq --argjson VERSION $DASHBOARD_VERSION '.dashboard.version = $VERSION' \
+  | curl --request POST \
+    --header 'Accept: application/json' \
+    --header 'Content-Type: application/json' \
+    http://169.46.107.203:31769/api/dashboards/db \
+    --data @-
+else
+  echo "DASHBOARD_VERSION=$DASHBOARD_VERSION"
+  echo "{ \"dashboard\": $(cat $DASHBOARD_DEFN) }" | jq --argjson VERSION $DASHBOARD_VERSION '.dashboard.version = $VERSION' \
+  | curl --request POST \
+    --header 'Accept: application/json' \
+    --header 'Content-Type: application/json' \
+    http://169.46.107.203:31769/api/dashboards/db \
+    --data @-
 fi
 
-echo "DASHBOARD_VERSION=$DASHBOARD_VERSION"
-
-#curl -s --header 'Accept: application/json' \
-#  $GRAFANA_URL/api/dashboards/uid/$DASHBOARD_UID \
-#| jq '.' > iter8-current.json
-#echo "{ \"meta\": $(curl -s --header 'Accept: application/json' $GRAFANA_URL/api/dashboards/uid/$DASHBOARD_UID | jq '.meta'), \"dashboard\": $(cat $DASHBOARD_DEFN) }" | jq --argjson VERSION $DASHBOARD_VERSION '.dashboard.version = $VERSION' > iter8-new.json
-#diff -w iter8-current.json iter8-new.json > diff
-
-echo "{ \"meta\": $(curl -s --header 'Accept: application/json' $GRAFANA_URL/api/dashboards/uid/$DASHBOARD_UID | jq '.meta'), \"dashboard\": $(cat $DASHBOARD_DEFN) }" | jq --argjson VERSION $DASHBOARD_VERSION '.dashboard.version = $VERSION' \
-| curl --request POST \
-  --header 'Accept: application/json' \
-  --header 'Content-Type: application/json' \
-  http://169.46.107.203:31769/api/dashboards/db \
-  --data @-

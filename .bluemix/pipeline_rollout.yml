@@ -166,7 +166,8 @@ stages:
 
       # Check Istio installation in target cluster
       GRAFANA_URL=${CANARY_DASHBOARD}
-      DASHBOARD_DEFN="scripts/istio.json"
+      DASHBOARD_DEFN="/tmp/istio.json"
+      curl -sSL https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/istio.json -o $DASHBOARD_DEFN
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/grafana_check_install.sh")
   - name: Check app config
     type: deployer
