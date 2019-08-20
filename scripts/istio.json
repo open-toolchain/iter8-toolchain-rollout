@@ -1196,7 +1196,7 @@
         },
         "datasource": "Prometheus",
         "definition": "label_values(istio_requests_total, destination_service_namespace)",
-        "hide": 0,
+        "hide": 2,
         "includeAll": false,
         "label": "Namespace",
         "multi": false,
