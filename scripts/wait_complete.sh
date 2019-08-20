@@ -53,9 +53,9 @@ log() {
   echo "      Assessment: $(kubectl --namespace ${CLUSTER_NAMESPACE} \
     get experiment ${EXPERIMENT_NAME} \
     --output jsonpath='{.status.assessment.conclusions}')"
-  echo "Canary Dashboard: $(kubectl --namespace ${CLUSTER_NAMESPACE} \
-    get experiment ${EXPERIMENT_NAME} \
-    --output jsonpath='{.status.grafanaURL}')"
+  echo "Canary Dashboard:"
+  kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}'
+  echo ""
 }
 
 startS=$(date +%s)

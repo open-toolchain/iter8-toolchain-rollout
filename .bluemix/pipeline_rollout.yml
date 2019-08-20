@@ -321,9 +321,9 @@ stages:
       # Create canary deployment yaml
       USE_ISTIO_GATEWAY=true
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/deploy_kubectl.sh")
-      echo "Canary Dashboard: $(kubectl --namespace ${CLUSTER_NAMESPACE} \
-        get experiment ${EXPERIMENT_NAME} \
-        --output jsonpath='{.status.grafanaURL}')"
+      echo "Canary Dashboard:"
+      kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}'
+      echo ""
   - name: Wait and Cleanup
     type: deployer
     target:
