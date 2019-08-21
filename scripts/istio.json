@@ -16,7 +16,6 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 17,
   "iteration": 1561057163257,
   "links": [],
   "panels": [
@@ -1133,7 +1132,7 @@
         "name": "service",
         "options": [],
         "query": "label_values(istio_requests_total{destination_service_namespace='$namespace', destination_service_name != 'unknown'}, destination_service_name)",
-        "refresh": 1,
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 1,
@@ -1155,7 +1154,7 @@
         "name": "baseline",
         "options": [],
         "query": "label_values(istio_requests_total{destination_service_name = '$service', destination_service_namespace='$namespace', destination_workload != 'unknown'}, destination_workload)",
-        "refresh": 0,
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
@@ -1177,7 +1176,7 @@
         "name": "candidate",
         "options": [],
         "query": "label_values(istio_requests_total{destination_service_name = '$service', destination_service_namespace = '$namespace', destination_workload != 'unknown'}, destination_workload)",
-        "refresh": 0,
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
@@ -1209,7 +1208,7 @@
           }
         ],
         "query": "label_values(istio_requests_total{destination_service_namespace!='unknown'}, destination_service_namespace)",
-        "refresh": 0,
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
@@ -1330,6 +1329,5 @@
   },
   "timezone": "",
   "title": "Iter8 Metrics",
-  "uid": "eXPEaNnZz",
-  "version": 1
+  "uid": "eXPEaNnZz"
 }
