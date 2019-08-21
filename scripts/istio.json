@@ -1125,14 +1125,14 @@
           "value": "reviews"
         },
         "datasource": "Prometheus",
-        "definition": "label_values(istio_requests_total, destination_service_name)",
+        "definition": "label_values(istio_requests_total{destination_service_namespace='$namespace', destination_service_name != 'unknown'}, destination_service_name)",
         "hide": 0,
         "includeAll": false,
         "label": "Service",
         "multi": false,
         "name": "service",
         "options": [],
-        "query": "label_values(istio_requests_total, destination_service_name)",
+        "query": "label_values(istio_requests_total{destination_service_namespace='$namespace', destination_service_name != 'unknown'}, destination_service_name)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -1195,8 +1195,8 @@
           "value": "default"
         },
         "datasource": "Prometheus",
-        "definition": "label_values(istio_requests_total, destination_service_namespace)",
-        "hide": 2,
+        "definition": "label_values(istio_requests_total{destination_service_namespace!='unknown'}, destination_service_namespace)",
+        "hide": 0,
         "includeAll": false,
         "label": "Namespace",
         "multi": false,
@@ -1208,7 +1208,7 @@
             "value": "default"
           }
         ],
-        "query": "label_values(istio_requests_total, destination_service_namespace)",
+        "query": "label_values(istio_requests_total{destination_service_namespace!='unknown'}, destination_service_namespace)",
         "refresh": 0,
         "regex": "",
         "skipUrlSync": false,
