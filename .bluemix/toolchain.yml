@@ -9,7 +9,7 @@ template:
   header: '![](toolchain.svg?localize)'
   icon: istio-blue-logo-social.svg
   required:
-    - build
+    - build_rollout
     - repo
   info:
     #git url: >-
