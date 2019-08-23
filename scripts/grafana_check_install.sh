@@ -2,14 +2,15 @@
 
 #set -x
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 DASHBOARD_UID=eXPEaNnZz
+: "${GRAFANA_URL:=http://localhost:3000}"
+: "${DASHBOARD_DEFN:=${DIR}/../config/grafana/istio.json}"
 
 echo "      GRAFANA_URL=$GRAFANA_URL"
 echo "    DASHBOARD_UID=$DASHBOARD_UID"
 echo "   DASHBOARD_DEFN=$DASHBOARD_DEFN"
-
-# default version
-DASHBOARD_VERSION=1
 
 status=$(curl -Is --header 'Accept: application/json' $GRAFANA_URL/api/dashboards/uid/$DASHBOARD_UID 2>/dev/null | head -n 1 | cut -d$' ' -f2)
 if [[ "$status" == "200" ]]; then
@@ -28,7 +29,7 @@ if [[ "$status" == "200" ]]; then
   #| curl --request POST \
   #  --header 'Accept: application/json' \
   #  --header 'Content-Type: application/json' \
-  #  http://169.46.107.203:31769/api/dashboards/db \
+  #  $GRAFANA_URL/api/dashboards/db \
   #  --data @-
 else
   echo "Defining canary dashboard on $GRAFANA_URL"
@@ -37,7 +38,6 @@ else
   | curl --request POST \
     --header 'Accept: application/json' \
     --header 'Content-Type: application/json' \
-    http://169.46.107.203:31769/api/dashboards/db \
+    $GRAFANA_URL/api/dashboards/db \
     --data @-
 fi
-
