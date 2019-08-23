@@ -14,9 +14,9 @@
 echo "EXPERIMENT_TEMPLATE_FILE=${EXPERIMENT_TEMPLATE_FILE}"
 echo "EXPERIMENT_NAME=${EXPERIMENT_NAME}"
 echo "BASELINE_DEPLOYMENT_NAME=${BASELINE_DEPLOYMENT_NAME}"
-echo "CANARY_DEPLOYMENT_NAME=${CANARY_DEPLOYMENT_NAME}"
+echo "CANDIDATE_DEPLOYMENT_NAME=${CANDIDATE_DEPLOYMENT_NAME}"
 echo "ON_SUCCESS=${ON_SUCCESS}"
-echo "CANARY_DASHBOARD=${CANARY_DASHBOARD}"
+echo "ROLLOUT_DASHBOARD=${ROLLOUT_DASHBOARD}"
 echo "CLUSTER_NAMESPACE=${CLUSTER_NAMESPACE}"
 
 # Fail early if no experient template
@@ -28,9 +28,9 @@ fi
 # Update experiment update
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} metadata.name ${EXPERIMENT_NAME}
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} spec.targetService.baseline ${BASELINE_DEPLOYMENT_NAME}
-yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} spec.targetService.candidate ${CANARY_DEPLOYMENT_NAME}
+yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} spec.targetService.candidate ${CANDIDATE_DEPLOYMENT_NAME}
 yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} spec.trafficControl.onSuccess ${ON_SUCCESS}
-yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} spec.analysis.grafanaEndpoint ${CANARY_DASHBOARD}
+yq write --inplace ${EXPERIMENT_TEMPLATE_FILE} spec.analysis.grafanaEndpoint ${ROLLOUT_DASHBOARD}
 
 cat ${EXPERIMENT_TEMPLATE_FILE}
 

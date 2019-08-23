@@ -25,7 +25,7 @@ template:
         "(" + $env.repository +
           "/tree/" + $env.branch + ")"
 toolchain:
-  name: 'canary-rollout-toolchain-{{timestamp}}'
+  name: 'candidate-rollout-toolchain-{{timestamp}}'
   template:
     getting_started:
       $ref: "#/messages/template.gettingStarted" 
@@ -66,18 +66,18 @@ services:
           PROD_RESOURCE_GROUP: '{{form.pipeline.parameters.prod-resource-group}}'
           PROD_CLUSTER_NAME: '{{form.pipeline.parameters.prod-cluster-name}}'
           PROD_CLUSTER_NAMESPACE: '{{form.pipeline.parameters.prod-cluster-namespace}}'
-          CANARY_DASHBOARD: '{{services.grafana.parameters.dashboard_url}}'
+          ROLLOUT_DASHBOARD: '{{services.grafana.parameters.dashboard_url}}'
         execute: true
   webide:
     service_id: orion
   grafana:
     service_id: customtool
     parameters:
-      type: Canary
+      type: Grafana
       lifecyclePhase: "MANAGE"
-      name: Grafana Dashboard
+      name: Rollout Metrics
       dashboard_url: http://localhost:3000
-      description: Grafana dashboard for canary tests
+      description: Grafana dashboard for rollout metrics
 
 form:
   pipeline:

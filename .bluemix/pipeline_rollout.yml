@@ -104,8 +104,8 @@ stages:
   - name: buildprops
     value: build.properties
     type: file
-  - name: CANARY_DASHBOARD
-    value: ${CANARY_DASHBOARD}
+  - name: ROLLOUT_DASHBOARD
+    value: ${ROLLOUT_DASHBOARD}
     type: text
   - name: CLUSTER_NAMESPACE
     value: ${PROD_CLUSTER_NAMESPACE}
@@ -165,7 +165,7 @@ stages:
       #    source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/grafana_check_install.sh")
 
       # Check Istio installation in target cluster
-      GRAFANA_URL=${CANARY_DASHBOARD}
+      GRAFANA_URL=${ROLLOUT_DASHBOARD}
       DASHBOARD_DEFN="/tmp/istio.json"
       curl -sSL https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/istio.json -o $DASHBOARD_DEFN
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/grafana_check_install.sh")
@@ -242,8 +242,8 @@ stages:
   - name: CLUSTER_NAMESPACE
     value: ${PROD_CLUSTER_NAMESPACE}
     type: text
-  - name: CANARY_DASHBOARD
-    value: ${CANARY_DASHBOARD}
+  - name: ROLLOUT_DASHBOARD
+    value: ${ROLLOUT_DASHBOARD}
     type: text
   - name: PATCH_FILE
     value: kustomize/patch.yaml
@@ -266,15 +266,15 @@ stages:
 
       # Identify canary deployment name from the deployment yaml
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/create_deployment.sh")
-      CANARY_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)
+      CANDIDATE_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)
 
       # Identify baseline deployment by searching the cluster
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/identify_stable.sh")
-      if [[ -z $BASELINE_DEPLOYMENT_NAME ]]; then BASELINE_DEPLOYMENT_NAME=$CANARY_DEPLOYMENT_NAME; fi
+      if [[ -z $BASELINE_DEPLOYMENT_NAME ]]; then BASELINE_DEPLOYMENT_NAME=$CANDIDATE_DEPLOYMENT_NAME; fi
 
       # Run canary experiment using iter8
       echo "BASELINE_DEPLOYMENT_NAME=${BASELINE_DEPLOYMENT_NAME}"
-      echo "CANARY_DEPLOYMENT_NAME=$CANARY_DEPLOYMENT_NAME"
+      echo "CANDIDATE_DEPLOYMENT_NAME=$CANDIDATE_DEPLOYMENT_NAME"
       ON_SUCCESS=candidate
       source <(curl -sSL "https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/create_experiment.sh")
   - name: Pre-deploy check

@@ -30,7 +30,7 @@ Learn how to implement a progressive rollout of an application using iter8:
 
   * Inspect metrics for the rollout via the grafana dashboard. A direct URL can be found at the end of the log for the _Deploy to Kubernetes_ job of the _ROLLOUT_CANDIDATE_ stage. One the experiment is complete, the URL is updated in the log for the _Wait and Cleanup_ job.
 
-  * If the canary rollout has been configured to take more than an hour (in the iter8 experiment template file), the _ROLLOUT CANDIDATE_ stage will terminate before the rollout is complete. Once it completes, the unused version will remain deployed and unused -- Istio will be configured to send traffic to only one deployment. This needs to be manually cleaned up.
+  * If the rollout has been configured to take more than an hour (in the iter8 experiment template file), the _ROLLOUT CANDIDATE_ stage will terminate before the rollout is complete. Once it completes, the unused version will remain deployed and unused -- Istio will be configured to send traffic to only one deployment. This needs to be manually cleaned up.
 
   * Once the rollout has started, it can be manually short-circuited by rolling forward or backward using the _IMMEDIATE ROLLBACK_ or _IMMEDIATE ROLLFORWARD_ stages. This can most reliably be done using the `Send To` tool on the _PREPARE CANDIDATE ROLLOUT_ stage.
 
