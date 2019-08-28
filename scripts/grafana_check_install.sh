@@ -14,7 +14,7 @@ echo "   DASHBOARD_DEFN=$DASHBOARD_DEFN"
 
 status=$(curl -Is --header 'Accept: application/json' $GRAFANA_URL/api/dashboards/uid/$DASHBOARD_UID 2>/dev/null | head -n 1 | cut -d$' ' -f2)
 if [[ "$status" == "200" ]]; then
-  echo "Canary Dashboard already defined in $GRAFANA_URL"
+  echo "Rollout dashboard already defined in $GRAFANA_URL"
   #DASHBOARD_VERSION=$( curl -s --header 'Accept: application/json' \
   #  $GRAFANA_URL/api/dashboards/uid/$DASHBOARD_UID \
   #| jq '.dashboard.version')
@@ -32,7 +32,7 @@ if [[ "$status" == "200" ]]; then
   #  $GRAFANA_URL/api/dashboards/db \
   #  --data @-
 else
-  echo "Defining canary dashboard on $GRAFANA_URL"
+  echo "Defining rollout dashboard on $GRAFANA_URL"
   echo "{ \"dashboard\": $(cat $DASHBOARD_DEFN) }" \
   | jq 'del(.dashboard.id) | del(.dashboard.version)' \
   | curl --request POST \

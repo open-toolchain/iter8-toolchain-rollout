@@ -53,7 +53,7 @@ log() {
   echo "      Assessment: $(kubectl --namespace ${CLUSTER_NAMESPACE} \
     get experiment ${EXPERIMENT_NAME} \
     --output jsonpath='{.status.assessment.conclusions}')"
-  echo "Canary Dashboard:"
+  echo "Rollout dashboard:"
   kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}'
   echo ""
 }

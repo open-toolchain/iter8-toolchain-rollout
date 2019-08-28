@@ -8,7 +8,7 @@
 # ------------------
 # source: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/create_deployment.sh
 
-# Create canary deployment yaml
+# Create candidate deployment yaml
 
 
 export DEPLOYMENT_FILE=deploy.yaml
