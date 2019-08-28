@@ -41,20 +41,20 @@ echo "    IDS_STAGE_NAME = $IDS_STAGE_NAME"
 
 get_experiment_phase() {
   kubectl --namespace ${CLUSTER_NAMESPACE} \
-    get experiment ${EXPERIMENT_NAME} \
+    get experiments.iter8.tools ${EXPERIMENT_NAME} \
     -o jsonpath='{.status.phase}'
 }
 
 log() {
   echo "$@"
   echo "         Message: $(kubectl --namespace ${CLUSTER_NAMESPACE} \
-    get experiment ${EXPERIMENT_NAME} \
+    get experiments.iter8.tools ${EXPERIMENT_NAME} \
     --output jsonpath='{.status.message}')"
   echo "      Assessment: $(kubectl --namespace ${CLUSTER_NAMESPACE} \
-    get experiment ${EXPERIMENT_NAME} \
+    get experiments.iter8.tools ${EXPERIMENT_NAME} \
     --output jsonpath='{.status.assessment.conclusions}')"
   echo "Rollout dashboard:"
-  kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}'
+  kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}'
   echo ""
 }
 
@@ -67,8 +67,8 @@ while (( timePassedS < ${DURATION} )); do
   if [[ "${phase}" == "${PHASE_SUCCEEDED}" ]] || [[ "${phase}" == "${PHASE_FAILED}" ]]; then
     # experiment is done; delete appropriate version
     # if baseline and candidate are the same then don't delete anything
-    _baseline=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.spec.targetService.baseline}')
-    _candidate=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.spec.targetService.candidate}')
+    _baseline=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} -o jsonpath='{.spec.targetService.baseline}')
+    _candidate=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} -o jsonpath='{.spec.targetService.candidate}')
     echo "         _baseline = ${_baseline}"
     echo "        _candidate = ${_candidate}"
     if [[ "${_baseline}" == "${_candidate}" ]]; then
@@ -77,8 +77,8 @@ while (( timePassedS < ${DURATION} )); do
     fi
 
     # To determine which version to delete: look at traffic split
-    _b_traffic=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.status.trafficSplitPercentage.baseline}')
-    _c_traffic=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.status.trafficSplitPercentage.candidate}')
+    _b_traffic=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} -o jsonpath='{.status.trafficSplitPercentage.baseline}')
+    _c_traffic=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} -o jsonpath='{.status.trafficSplitPercentage.candidate}')
     echo " baseline traffic is ${_b_traffic}"
     echo "candidate traffic is ${_c_traffic}"
 
@@ -108,7 +108,7 @@ while (( timePassedS < ${DURATION} )); do
     # First consider two unexpeted conditions that always result in failure. These are around
     # and inconsistency in .spec.assessment and $FORCE_TERMINATION (set by IMMEDIATE ROLLBACK and
     # IMMEDIATE ROLLFORWARD)
-    _assessment=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} -o jsonpath='{.spec.assessment}')
+    _assessment=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} -o jsonpath='{.spec.assessment}')
     echo "       _assessment = ${_assessment}"
     if [[ -n ${FORCE_TERMINATION} ]] && [[ -z ${_assessment} ]]; then
       log "Attempt to terminate experiment in stage ${IDS_STAGE_NAME} but success/failure not specified."
@@ -127,7 +127,7 @@ while (( timePassedS < ${DURATION} )); do
 
     # Read reason from experiment 
     _reason=$(kubectl --namespace ${CLUSTER_NAMESPACE} \
-                get experiment ${EXPERIMENT_NAME} \
+                get experiments.iter8.tools ${EXPERIMENT_NAME} \
                 --output jsonpath='{.status.conditions[?(@.type=="Ready")].reason}')
     echo "_reason=${_reason}"
 
@@ -176,7 +176,7 @@ done
 # We've waited ${DURATION} for the experiment to complete
 # It hasn't, so we log warning and fail. User becomes responsible for cleanup.
 echo "WARNING: Stage ${IDS_STAGE_NAME} did not complete experiment in ${DURATION}"
-echo "   To check status of rollout: kubectl --namespace ${CLUSTER_NAMESPACE} experiment ${EXPERIMENT_NAME}"
+echo "   To check status of rollout: kubectl --namespace ${CLUSTER_NAMESPACE} experiments.iter8.tools ${EXPERIMENT_NAME}"
 echo "   To delete original version (successful rollout), trigger stage IMMEDIATE ROLLFORWARD"
 echo "   To delete candidate version (failed rollout), trigger stage IMMEDIATE ROLLBACK"
 log "WARNING: Stage ${IDS_STAGE_NAME} did not complete experiment in ${DURATION}s"

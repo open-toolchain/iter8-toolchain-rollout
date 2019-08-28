@@ -12,7 +12,7 @@ NUM_DR=$(kubectl --namespace ${CLUSTER_NAMESPACE} get dr --selector=iter8.tools/
 if (( ${NUM_DR} == 0 )); then
   # Find deployment(s) implementing $SERVICE
   SERVICE=$(yq read ${EXPERIMENT_TEMPLATE_FILE} spec.targetService.name)
-  #SERVICE=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiment ${EXPERIMENT_NAME} --output jsonpath='{.spec.targetService.name}')
+  #SERVICE=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} --output jsonpath='{.spec.targetService.name}')
   DEPLOY_SELECTOR=$(kubectl --namespace ${CLUSTER_NAMESPACE} get svc ${SERVICE} --output json | jq -r '.spec.selector | to_entries[] | "\(.key)=\(.value)"' | paste -sd',' -)
 else
   DEPLOY_SELECTOR=$(kubectl --namespace ${CLUSTER_NAMESPACE} get dr --selector=iter8.tools/role=stable -o json | jq -r '.items[0].spec.subsets[] | select(.name == "stable") | .labels | to_entries[] | "\(.key)=\(.value)"' | paste -sd',' -)
