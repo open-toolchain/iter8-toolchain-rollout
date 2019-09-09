@@ -12,7 +12,7 @@ Any code change to the master branch in the Git repo will automatically be built
 
 ### To get started, click this button:
 
-  [![Create Toolchain](https://cloud.ibm.com/devops/graphics/create_toolchain_button.png)](https://cloud.ibm.com/devops/setup/deploy/?repository=https%3A//github.com/kalantar/canary-testing-istio-toolchain&env_id=ibm:yp:us-south)
+  [![Create Toolchain](https://cloud.ibm.com/devops/graphics/create_toolchain_button.png)](https://cloud.ibm.com/devops/setup/deploy/?repository=https%3A//github.com/iter8-tools/iter8-toolchain-rollout&env_id=ibm:yp:us-south)
 
 DISCLAIMER: This toolchain uses [Istio](https://istio.io/) 1.1.5+, which requires more resources than available in IKS lite clusters, please ensure you target a standard cluster instead.
 

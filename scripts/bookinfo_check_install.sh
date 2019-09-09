@@ -24,11 +24,11 @@ EOF
 
 # Install bookinfo
 kubectl --namespace ${CLUSTER_NAMESPACE} \
-   apply -f https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/bookinfo.yaml
+   apply -f https://raw.githubusercontent.com/iter8-tools/iter8-toolchain-rollout/master/scripts/bookinfo.yaml
 
 # Expose bookinfo
 #kubectl --namespace ${CLUSTER_NAMESPACE} \
-#    apply -f https://raw.githubusercontent.com/kalantar/canary-testing-istio-toolchain/master/scripts/bookinfo-gateway.yaml
+#    apply -f https://raw.githubusercontent.com/iter8-tools/iter8-toolchain-rollout/master/scripts/bookinfo-gateway.yaml
 
 HOST="bookinfo.${CLUSTER_NAMESPACE}"
 echo "HOST=$HOST"
