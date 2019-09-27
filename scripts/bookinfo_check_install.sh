@@ -75,9 +75,12 @@ spec:
           number: 9080
 EOF
 
-LOADBALANCER=$(kubectl --namespace istio-system get service istio-ingressgateway --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
-PORT=$(kubectl --namespace istio-system get service istio-ingressgateway --output jsonpath='{.spec.ports[?(@.targetPort==80)].nodePort}')
-APP_URL="http://$LOADBALANCER:$PORT/productpage"
+PORT=$(kubectl -n istio-system get svc istio-ingressgateway -o jsonpath='{.spec.ports[?(@.targetPort==80)].nodePort}')
+IP=$(kubectl -n istio-system get svc istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+if [[ ! ${IP} ]]; then
+  IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type == "ExternalIP")].address}')
+fi
+APP_URL="http://$IP:$PORT/productpage"
 
 echo "Application URL: $APP_URL"
 echo "   curl command: curl -Is -H 'Host: $HOST' $APP_URL"
