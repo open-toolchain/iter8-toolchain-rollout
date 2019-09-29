@@ -110,6 +110,9 @@ stages:
   - name: CLUSTER_NAMESPACE
     value: ${PROD_CLUSTER_NAMESPACE}
     type: text
+  - name: HOST
+    value:
+    type: text
   jobs:
   - name: Check Istio config
     type: deployer

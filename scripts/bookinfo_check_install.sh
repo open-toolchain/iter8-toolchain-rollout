@@ -30,8 +30,8 @@ kubectl --namespace ${CLUSTER_NAMESPACE} \
 #kubectl --namespace ${CLUSTER_NAMESPACE} \
 #    apply -f https://raw.githubusercontent.com/iter8-tools/iter8-toolchain-rollout/master/scripts/bookinfo-gateway.yaml
 
-HOST="bookinfo.${CLUSTER_NAMESPACE}"
-echo "HOST=$HOST"
+HOSTNAME="${HOST}"
+if [[ -z ${HOST} ]]; then HOSTNAME='*'; fi
 
 cat <<EOF | kubectl --namespace ${CLUSTER_NAMESPACE} apply -f -
 apiVersion: networking.istio.io/v1alpha3
@@ -47,7 +47,7 @@ spec:
       name: http
       protocol: HTTP
     hosts:
-    - "${HOST}"
+    - "${HOSTNAME}"
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -55,7 +55,7 @@ metadata:
   name: bookinfo
 spec:
   hosts:
-  - "${HOST}"
+  - "${HOSTNAME}"
   gateways:
   - bookinfo-gateway
   http:
@@ -80,8 +80,13 @@ IP=$(kubectl -n istio-system get svc istio-ingressgateway -o jsonpath='{.status.
 if [[ ! ${IP} ]]; then
   IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type == "ExternalIP")].address}')
 fi
-APP_URL="http://$IP:$PORT/productpage"
+APP_URL="http://${IP}:${PORT}/productpage"
 
-echo "Application URL: $APP_URL"
-echo "   curl command: curl -Is -H 'Host: $HOST' $APP_URL"
-echo "Load Generation: watch -x -n 0.1 curl -Is -H 'Host: $HOST' $APP_URL"
+echo "Application URL: ${APP_URL}"
+if [[ -z ${HOST} ]]; then
+  echo "   curl command: curl -Is ${APP_URL}"
+  echo "Load Generation: watch -x -n 0.1 curl -Is ${APP_URL}"
+else
+  echo "   curl command: curl -Is -H 'Host: ${HOST}' ${APP_URL}"
+  echo "Load Generation: watch -x -n 0.1 curl -Is -H 'Host: ${HOST}' ${APP_URL}"
+fi
