@@ -24,11 +24,11 @@ EOF
 
 # Install bookinfo
 kubectl --namespace ${CLUSTER_NAMESPACE} \
-   apply -f https://raw.githubusercontent.com/iter8-tools/iter8-toolchain-rollout/master/scripts/bookinfo.yaml
+   apply -f https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/bookinfo.yaml
 
 # Expose bookinfo
 #kubectl --namespace ${CLUSTER_NAMESPACE} \
-#    apply -f https://raw.githubusercontent.com/iter8-tools/iter8-toolchain-rollout/master/scripts/bookinfo-gateway.yaml
+#    apply -f https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/bookinfo-gateway.yaml
 
 HOSTNAME="${HOST}"
 if [[ -z ${HOST} ]]; then HOSTNAME='*'; fi

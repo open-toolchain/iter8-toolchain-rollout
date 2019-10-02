@@ -4,7 +4,7 @@ This Devops process illustrates how to deploy a new version of an application us
 
 The sample application used to illustrate progressive rollout is adapted from the reviews microservice from the Istio sample application [bookinfo](https://github.com/istio/istio/tree/master/samples/bookinfo/src). This microservice is written in Java and builds as a Docker image. The DevOps toolchain is preconfigured for continuous delivery with Vulnerability Advisor, source control, issue tracking, online editing, and deployment and progressive rollout to the IBM Cloud Kubernetes Service.
 
-Application code is stored in source control, along with its Dockerfile, its Kubernetes deployment script (described using [kustomize](https://kustomize.io/)) and an [iter8](https://github.com/iter8-tools/docs) _experiment_ template.
+Application code is stored in source control, along with its Dockerfile, its Kubernetes deployment script (described using [kustomize](https://kustomize.io/)) and an iter8 _experiment_ template.
 The target cluster is configured during toolchain setup (using an IBM Cloud API key and cluster name). You can later change these by modifying the Delivery Pipeline configuration.
 Any code change to the master branch in the Git repo will automatically be built, validated and rolled out into the Kubernetes cluster.
 
@@ -12,7 +12,7 @@ Any code change to the master branch in the Git repo will automatically be built
 
 ## To get started, click this button:
 
-  [![Create Toolchain](https://cloud.ibm.com/devops/graphics/create_toolchain_button.png)](https://cloud.ibm.com/devops/setup/deploy/?repository=https%3A//github.com/iter8-tools/iter8-toolchain-rollout&env_id=ibm:yp:us-south)
+  [![Create Toolchain](https://cloud.ibm.com/devops/graphics/create_toolchain_button.png)](https://cloud.ibm.com/devops/setup/deploy/?repository=https%3A//github.com/open-toolchain/iter8-toolchain-rollout&env_id=ibm:yp:us-south)
 
 DISCLAIMER: This toolchain uses [Istio](https://istio.io/). If you want to use the managed Istio service (vs manually installing the demo version), please ensure you target a standard cluster instead.
 
@@ -37,7 +37,6 @@ Learn how to implement a progressive rollout of an application using iter8:
 ### Learn more
 
 * Step by step [tutorial](https://cloudcontent.mybluemix.net/cloud/garage/tutorials/canary-test-kubernetes-iter8-toolchain)
-* Learn about [iter8](https://github.com/iter8-tools/docs)
 * Learn about [Istio](https://istio.io/)
 * Blog [Continuously deliver your app to Kubernetes with Bluemix](https://www.ibm.com/blogs/bluemix/2017/07/continuously-deliver-your-app-to-kubernetes-with-bluemix/)
 * [Getting started with IBM Cloud clusters](https://cloud.ibm.com/docs/containers?topic=containers-getting-started)
