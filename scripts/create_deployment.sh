@@ -19,14 +19,18 @@ if [ ! -f ${PATCH_FILE} ]; then
 fi
 
 # Install kustomize
+pushd /tmp
 opsys=linux  # or darwin, or windows
-curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest |\
-    grep browser_download |\
-    grep $opsys |\
-    cut -d '"' -f 4 |\
-    xargs curl -O -L
-mv kustomize_*_${opsys}_amd64 /usr/local/bin/kustomize
-chmod u+x /usr/local/bin/kustomize
+curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases |\
+  grep browser_download |\
+  grep $opsys |\
+  cut -d '"' -f 4 |\
+  grep /kustomize/v |\
+  sort | tail -n 1 |\
+  xargs curl -O -L
+tar xzf ./kustomize_v*_${opsys}_amd64.tar.gz
+mv kustomize /usr/local/bin/kustomize
+popd
 
 # Modify patch file using $IMAGE_TAG as VERSION
 PIPELINE_IMAGE_URL="$REGISTRY_URL/$REGISTRY_NAMESPACE/$IMAGE_NAME:$IMAGE_TAG"
