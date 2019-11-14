@@ -72,6 +72,9 @@ metadata:
   name: ratings-v1
 spec:
   replicas: 1
+  selector:
+     matchLabels:
+       app: ratings
   template:
     metadata:
       labels:
@@ -123,6 +126,9 @@ metadata:
   name: productpage-v1
 spec:
   replicas: 1
+  selector:
+     matchLabels:
+       app: productpage
   template:
     metadata:
       labels:
