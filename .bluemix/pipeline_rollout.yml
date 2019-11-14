@@ -150,7 +150,7 @@ stages:
       #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/iter8_check_install.sh")
 
       # Check Istio installation in target cluster
-      source <(curl -sSL "https://raw.githubusercontent.com/kalantar/iter8-toolchain-rollout/master/scripts/iter8_check_install.sh")
+      source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/iter8_check_install.sh")
   - name: Check dashboard config
     type: deployer
     target:
