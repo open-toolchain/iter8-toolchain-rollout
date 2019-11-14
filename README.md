@@ -12,7 +12,7 @@ Any code change to the master branch in the Git repo will automatically be built
 
 ## To get started, click this button:
 
-  [![Create Toolchain](https://cloud.ibm.com/devops/graphics/create_toolchain_button.png)](https://cloud.ibm.com/devops/setup/deploy/?repository=https%3A//github.com/open-toolchain/iter8-toolchain-rollout&env_id=ibm:yp:us-south)
+  [![Create Toolchain](https://cloud.ibm.com/devops/graphics/create_toolchain_button.png)](https://cloud.ibm.com/devops/setup/deploy/?repository=https%3A//github.com/kalantar/iter8-toolchain-rollout&env_id=ibm:yp:us-south)
 
 DISCLAIMER: This toolchain uses [Istio](https://istio.io/). If you want to use the managed Istio service (vs manually installing the demo version), please ensure you target a standard cluster instead.
 
@@ -37,6 +37,7 @@ Learn how to implement a progressive rollout of an application using iter8:
 ### Learn more
 
 * Step by step [tutorial](https://www.ibm.com/cloud/garage/tutorials/canary-test-kubernetes-iter8-toolchain)
+* Learn about [iter8](https://iter8.tools/)
 * Learn about [Istio](https://istio.io/)
 * Blog [Continuously deliver your app to Kubernetes with Bluemix](https://www.ibm.com/blogs/bluemix/2017/07/continuously-deliver-your-app-to-kubernetes-with-bluemix/)
 * [Getting started with IBM Cloud clusters](https://cloud.ibm.com/docs/containers?topic=containers-getting-started)

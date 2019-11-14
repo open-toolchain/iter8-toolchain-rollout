@@ -18,10 +18,9 @@ if kubectl get namespace ${ITER8_NAMESPACE}; then
   echo -e "Namespace ${ITER8_NAMESPACE} found."
 else
   echo "iter8 not found, installing iter8"
-  # git clone https://github.ibm.com/istio-research/iter8.git
-  # helm template install/kubernetes/helm/iter8-analytics --name iter8-analytics | kubectl apply  -f -
-  kubectl apply -f https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/iter8-analytics.yaml
-  kubectl apply -f https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/iter8-controller.yaml
+  kubectl apply \
+  -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/install/iter8-controller.yaml \
+  -f https://raw.githubusercontent.com/iter8-tools/iter8-analytics/master/install/kubernetes/iter8-analytics.yaml
 fi
 
 echo ""
