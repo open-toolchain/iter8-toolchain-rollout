@@ -13,7 +13,7 @@
 
 # Constants
 MAX_DURATION=$(( 59*60 ))
-PHASE_SUCCEEDED="Succeeded"
+PHASE_COMPLETED="Completed"
 PHASE_FAILED="Failed"
 BASELINE="baseline"
 CANDIDATE="candidate"
@@ -64,7 +64,7 @@ while (( timePassedS < ${DURATION} )); do
   sleep ${SLEEP_TIME}
 
   phase=$(get_experiment_phase)
-  if [[ "${phase}" == "${PHASE_SUCCEEDED}" ]] || [[ "${phase}" == "${PHASE_FAILED}" ]]; then
+  if [[ "${phase}" == "${PHASE_COMPLETED}" ]] || [[ "${phase}" == "${PHASE_FAILED}" ]]; then
     # experiment is done; delete appropriate version
     # if baseline and candidate are the same then don't delete anything
     _baseline=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} -o jsonpath='{.spec.targetService.baseline}')
@@ -168,7 +168,7 @@ while (( timePassedS < ${DURATION} )); do
       exit 0
     fi
 
-  fi # if [[ "${phase}" == "${PHASE_SUCCEEDED}" ]] || [[ "${phase}" == "${PHASE_FAILED}" ]]; then
+  fi # if [[ "${phase}" == "${PHASE_COMPLETED}" ]] || [[ "${phase}" == "${PHASE_FAILED}" ]]; then
 
   timePassedS=$(( $(date +%s) - $startS ))
 done
