@@ -208,7 +208,7 @@ spec:
             #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_check_install.sh")
 
             # Check Istio installation in target cluster
-            #source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_check_install.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_check_install.sh")
         - name: post-execution-script
           value: |
             # Keep APP_URL in build.properties shuttle file
@@ -261,7 +261,7 @@ spec:
             #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/iter8_check_install.sh")
 
             # Check Istio installation in target cluster
-            #source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/iter8_check_install.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/iter8_check_install.sh")
         - name: post-execution-script
           value: |
             # Keep APP_URL in build.properties shuttle file
@@ -317,7 +317,7 @@ spec:
             GRAFANA_URL=${ROLLOUT_DASHBOARD}
             DASHBOARD_DEFN="/tmp/istio.json"
             curl -sSL https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/istio.json -o $DASHBOARD_DEFN
-            #source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/grafana_check_install.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/grafana_check_install.sh")
         - name: post-execution-script
           value: |
             # Keep APP_URL in build.properties shuttle file
@@ -370,7 +370,7 @@ spec:
             #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/bookinfo_check_install.sh")
 
             # Check Istio installation in target cluster
-            #source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/bookinfo_check_install.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/bookinfo_check_install.sh")
         - name: post-execution-script
           value: |
             # Keep APP_URL in build.properties shuttle file
@@ -483,18 +483,18 @@ spec:
             # set -x
 
             # Identify canary deployment name from the deployment yaml
-            #source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/create_deployment.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/create_deployment.sh")
             CANDIDATE_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)
 
             # Identify baseline deployment by searching the cluster
-            #source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/identify_stable.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/identify_stable.sh")
             if [[ -z $BASELINE_DEPLOYMENT_NAME ]]; then BASELINE_DEPLOYMENT_NAME=$CANDIDATE_DEPLOYMENT_NAME; fi
 
             # Run canary experiment using iter8
             echo "BASELINE_DEPLOYMENT_NAME=${BASELINE_DEPLOYMENT_NAME}"
             echo "CANDIDATE_DEPLOYMENT_NAME=$CANDIDATE_DEPLOYMENT_NAME"
             ON_SUCCESS=candidate
-            #source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/create_experiment.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/create_experiment.sh")
         - name: post-execution-script
           value: |
             # Keep APP_URL in build.properties shuttle file
@@ -554,7 +554,7 @@ spec:
             # Checks the cluster is ready, has a namespace configured with access to the private
             # image registry (using an IBM Cloud API Key). It also configures Helm Tiller service to later perform a deploy with Helm.
             touch ${DEPLOYMENT_FILE}
-            #source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_predeploy_kubectl.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_predeploy_kubectl.sh")
         - name: post-execution-script
           value: |
             # Keep APP_URL in build.properties shuttle file
@@ -618,7 +618,7 @@ spec:
             #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/deploy_kubectl.sh")
             # Create canary deployment yaml
             USE_ISTIO_GATEWAY=true
-            #source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/deploy_kubectl.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/deploy_kubectl.sh")
             echo "Rollout Dashboard:"
             kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}' || true
             echo ""
@@ -679,7 +679,7 @@ spec:
             #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/wait_complete.sh")
 
             # Check liveness and readiness probes to confirm application is healthy
-            #source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/wait_complete.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/wait_complete.sh")
         - name: post-execution-script
           value: |
             # Keep APP_URL in build.properties shuttle file
