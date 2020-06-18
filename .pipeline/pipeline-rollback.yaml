@@ -1,0 +1,84 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: iter8-rollback-pipeline
+spec:
+  params:
+    - name: repository
+      description: the git repo
+    - name: branch
+      description: the branch for the git repo
+    - name: revision
+      description: the git revision/commit for the git repo
+      default: ""
+    - name: path-to-dockerfile
+      default: '.'
+    - name: registry-region
+      description: The IBM Cloud region for image registry
+    - name: registry-namespace
+      description: container registry namespace
+    - name: app-name
+      description: application name
+    - name: image-name
+      description: image name
+    - name: dev-region
+    - name: dev-resource-group
+    - name: install-razee
+    - name: cluster-name
+      description: the name of the cluster to target
+    - name: dev-cluster-namespace
+      description: the namespace
+    - name: pipeline-debug
+      default: "0"
+  workspaces:
+    - name: pipeline-ws
+  tasks:
+    - name: immediate-rollback
+      taskRef:
+        name: iks-deploy-to-kubernetes
+      params:
+        - name: cluster-region
+          value: $(params.dev-region)
+        - name: resource-group
+          value: $(params.dev-resource-group)
+        - name: cluster-name
+          value: $(params.cluster-name)
+        - name: setup-script
+          value: |
+            export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
+            export buildprops="build.properties"
+            # pipeline build number is the doi build record id (if any)
+            export SOURCE_BUILD_NUMBER=$BUILD_NUMBER
+            echo "SOURCE_BUILD_NUMBER=$BUILD_NUMBER" >> build.properties
+            # For doi plugin invocation if needed
+            export TOOLCHAIN_ID=$PIPELINE_TOOLCHAIN_ID
+            # Single tag for the image built
+            export IMAGE_TAG=$IMAGE_TAGS
+            # Keep it in build.properties shuttle file
+            echo "IMAGE_TAG=$IMAGE_TAGS" >> build.properties
+            echo "================"
+            cat build.properties
+            echo "================"
+        - name: script
+          value: |
+            #!/bin/bash
+            # uncomment to debug the script
+            # set -x
+
+            # Override experiment as failure
+            echo "Stop iter8 experiment if still running"
+            kubectl --namespace ${CLUSTER_NAMESPACE} \
+              patch experiment ${EXPERIMENT_NAME} \
+              --type=json -p '[{"op": "add", "path": "/spec/assessment", "value": "override_failure"}]' \
+            || true # don't fail when the experiment can't be found
+
+            # Wait for termination and delete canary deployment
+            FORCE_TERMINATION=true
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/wait_complete.sh")
+        - name: pipeline-debug
+          value: $(params.pipeline-debug)
+      workspaces:
+        - name: artifacts
+          workspace: pipeline-ws
+      
