@@ -29,6 +29,11 @@ spec:
       description: the name of the cluster to target
     - name: dev-cluster-namespace
       description: the namespace
+    - name: grafana-dashboard-url
+    - name: experiment-template-file
+      default: "iter8/experiment.yaml"
+    - name: kustomize-patch-file
+      default: "kustomize/patch.yaml"
     - name: pipeline-debug
       default: "0"
   workspaces:
@@ -254,7 +259,7 @@ spec:
             kubectl -n istio-system port-forward $(kubectl -n istio-system get pod -l app=grafana -o jsonpath='{.items[0].metadata.name}') 3000:3000&
 
             # Check Istio installation in target cluster
-            GRAFANA_URL=${ROLLOUT_DASHBOARD}
+            GRAFANA_URL=$(params.grafana-dashboard-url)
             DASHBOARD_DEFN="/tmp/istio.json"
             curl -sSL https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/istio.json -o $DASHBOARD_DEFN
             source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/grafana_check_install.sh")
@@ -312,7 +317,8 @@ spec:
           value: $(params.cluster-name)
         - name: setup-script
           value: |
-            export EXPERIMENT_TEMPLATE_FILE="iter8/experiment.yaml"
+            # Iter8 experiment template file
+            export EXPERIMENT_TEMPLATE_FILE=$(params.experiment-template-file)
             export EXPERIMENT_NAME=''
             # Single tag for the image built
             export IMAGE_TAG=$IMAGE_TAGS
@@ -363,23 +369,8 @@ spec:
         - name: setup-script
           value: |
             export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
-            export API_KEY="$(params.apikey)"
-            export buildprops="build.properties"
-            export PROD_REGION_ID=$(params.dev-region)
-            export PROD_RESOURCE_GROUP=$(params.dev-resource-group)
-            export PROD_CLUSTER_NAME=$(params.cluster-name)
-            export ROLLOUT_DASHBOARD=$ROLLOUT_DASHBOARD
-            export PATCH_FILE="kustomize/patch.yaml"
-            export EXPERIMENT_TEMPLATE_FILE="iter8/experiment.yaml"
-            # pipeline build number is the doi build record id (if any)
-            export SOURCE_BUILD_NUMBER=$BUILD_NUMBER
-            echo "SOURCE_BUILD_NUMBER=$BUILD_NUMBER" >> build.properties
-            # For doi plugin invocation if needed
-            export TOOLCHAIN_ID=$PIPELINE_TOOLCHAIN_ID
-            # Single tag for the image built
-            export IMAGE_TAG=$IMAGE_TAGS
-            # Keep it in build.properties shuttle file
-            echo "IMAGE_TAG=$IMAGE_TAGS" >> build.properties
+            export ROLLOUT_DASHBOARD=$(params.grafana-dashboard-url)
+            export PATCH_FILE=$(params.kustomize-patch-file)
             echo "================"
             cat build.properties
             echo "================"
@@ -428,23 +419,6 @@ spec:
         - name: setup-script
           value: |
             export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
-            export API_KEY="$(params.apikey)"
-            export buildprops="build.properties"
-            export PROD_REGION_ID=$(params.dev-region)
-            export PROD_RESOURCE_GROUP=$(params.dev-resource-group)
-            export PROD_CLUSTER_NAME=$(params.cluster-name)
-            export ROLLOUT_DASHBOARD=$ROLLOUT_DASHBOARD
-            export PATCH_FILE="kustomize/patch.yaml"
-            export EXPERIMENT_TEMPLATE_FILE="iter8/experiment.yaml"
-            # pipeline build number is the doi build record id (if any)
-            export SOURCE_BUILD_NUMBER=$BUILD_NUMBER
-            echo "SOURCE_BUILD_NUMBER=$BUILD_NUMBER" >> build.properties
-            # For doi plugin invocation if needed
-            export TOOLCHAIN_ID=$PIPELINE_TOOLCHAIN_ID
-            # Single tag for the image built
-            export IMAGE_TAG=$IMAGE_TAGS
-            # Keep it in build.properties shuttle file
-            echo "IMAGE_TAG=$IMAGE_TAGS" >> build.properties
             echo "================"
             cat build.properties
             echo "================"
@@ -488,23 +462,6 @@ spec:
         - name: setup-script
           value: |
             export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
-            export API_KEY="$(params.apikey)"
-            export buildprops="build.properties"
-            export PROD_REGION_ID=$(params.dev-region)
-            export PROD_RESOURCE_GROUP=$(params.dev-resource-group)
-            export PROD_CLUSTER_NAME=$(params.cluster-name)
-            export ROLLOUT_DASHBOARD=$ROLLOUT_DASHBOARD
-            export PATCH_FILE="kustomize/patch.yaml"
-            export EXPERIMENT_TEMPLATE_FILE="iter8/experiment.yaml"
-            # pipeline build number is the doi build record id (if any)
-            export SOURCE_BUILD_NUMBER=$BUILD_NUMBER
-            echo "SOURCE_BUILD_NUMBER=$BUILD_NUMBER" >> build.properties
-            # For doi plugin invocation if needed
-            export TOOLCHAIN_ID=$PIPELINE_TOOLCHAIN_ID
-            # Single tag for the image built
-            export IMAGE_TAG=$IMAGE_TAGS
-            # Keep it in build.properties shuttle file
-            echo "IMAGE_TAG=$IMAGE_TAGS" >> build.properties
             echo "================"
             cat build.properties
             echo "================"

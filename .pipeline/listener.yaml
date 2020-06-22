@@ -31,6 +31,7 @@ spec:
     - name: dev-resource-group
     - name: dev-cluster-namespace
       description: namespace dev
+    - name: grafana-dashboard-url
   resourcetemplates:
     - apiVersion: v1
       kind: PersistentVolumeClaim
@@ -77,6 +78,8 @@ spec:
             value: $(params.cluster-name)
           - name: dev-cluster-namespace
             value: $(params.dev-cluster-namespace)
+          - name: grafana-dashboard-url
+            value: $(params.grafana-dashboard-url)
           - name: pipeline-debug
             value: $(params.pipeline-debug)
         workspaces:
