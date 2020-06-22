@@ -347,6 +347,7 @@ spec:
             # Record names in build.properties for use by later stages
             #   append to existing build.properties if already defined
             echo "EXPERIMENT_NAME=${EXPERIMENT_NAME}" >> build.properties
+            echo "EXPERIMENT_TEMPLATE_FILE=${EXPERIMENT_TEMPLATE_FILE}" >> build.properties
             cat build.properties
         - name: pipeline-debug
           value: $(params.pipeline-debug)
