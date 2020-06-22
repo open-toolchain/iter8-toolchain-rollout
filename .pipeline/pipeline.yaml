@@ -178,24 +178,6 @@ spec:
           value: $(params.dev-resource-group)
         - name: cluster-name
           value: $(params.cluster-name)
-        - name: setup-script
-          value: |
-            export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
-            export HOST=''
-            export ROLLOUT_DASHBOARD=$ROLLOUT_DASHBOARD
-            export buildprops="build.properties"
-            # pipeline build number is the doi build record id (if any)
-            export SOURCE_BUILD_NUMBER=$BUILD_NUMBER
-            echo "SOURCE_BUILD_NUMBER=$BUILD_NUMBER" >> build.properties
-            # For doi plugin invocation if needed
-            export TOOLCHAIN_ID=$PIPELINE_TOOLCHAIN_ID
-            # Single tag for the image built
-            export IMAGE_TAG=$IMAGE_TAGS
-            # Keep it in build.properties shuttle file
-            echo "IMAGE_TAG=$IMAGE_TAGS" >> build.properties
-            echo "================"
-            cat build.properties
-            echo "================"
         - name: script
           value: |
             #!/bin/bash
@@ -209,11 +191,6 @@ spec:
 
             # Check Istio installation in target cluster
             source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_check_install.sh")
-        - name: post-execution-script
-          value: |
-            # Keep APP_URL in build.properties shuttle file
-            echo "APP_URL=$APP_URL" >> build.properties
-            cat build.properties
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
@@ -232,24 +209,6 @@ spec:
           value: $(params.dev-resource-group)
         - name: cluster-name
           value: $(params.cluster-name)
-        - name: setup-script
-          value: |
-            export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
-            export HOST=''
-            export ROLLOUT_DASHBOARD=$ROLLOUT_DASHBOARD
-            export buildprops="build.properties"
-            # pipeline build number is the doi build record id (if any)
-            export SOURCE_BUILD_NUMBER=$BUILD_NUMBER
-            echo "SOURCE_BUILD_NUMBER=$BUILD_NUMBER" >> build.properties
-            # For doi plugin invocation if needed
-            export TOOLCHAIN_ID=$PIPELINE_TOOLCHAIN_ID
-            # Single tag for the image built
-            export IMAGE_TAG=$IMAGE_TAGS
-            # Keep it in build.properties shuttle file
-            echo "IMAGE_TAG=$IMAGE_TAGS" >> build.properties
-            echo "================"
-            cat build.properties
-            echo "================"
         - name: script
           value: |
             #!/bin/bash
@@ -262,11 +221,6 @@ spec:
 
             # Check Istio installation in target cluster
             source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/iter8_check_install.sh")
-        - name: post-execution-script
-          value: |
-            # Keep APP_URL in build.properties shuttle file
-            echo "APP_URL=$APP_URL" >> build.properties
-            cat build.properties
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
@@ -285,30 +239,12 @@ spec:
           value: $(params.dev-resource-group)
         - name: cluster-name
           value: $(params.cluster-name)
-        - name: setup-script
-          value: |
-            export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
-            export HOST=''
-            export ROLLOUT_DASHBOARD=$ROLLOUT_DASHBOARD
-            export buildprops="build.properties"
-            # pipeline build number is the doi build record id (if any)
-            export SOURCE_BUILD_NUMBER=$BUILD_NUMBER
-            echo "SOURCE_BUILD_NUMBER=$BUILD_NUMBER" >> build.properties
-            # For doi plugin invocation if needed
-            export TOOLCHAIN_ID=$PIPELINE_TOOLCHAIN_ID
-            # Single tag for the image built
-            export IMAGE_TAG=$IMAGE_TAGS
-            # Keep it in build.properties shuttle file
-            echo "IMAGE_TAG=$IMAGE_TAGS" >> build.properties
-            echo "================"
-            cat build.properties
-            echo "================"
         - name: script
           value: |
             #!/bin/bash
             # uncomment to debug the script
             # set -x
-            # copy the script below into your app code repo (e.g. ./scripts/bookinfo_check_install.sh) and 'source' it from your pipeline job
+            # copy the script below into your app code repo (e.g. ./scripts/grafana_check_install.sh) and 'source' it from your pipeline job
             #    source ./scripts/grafana_check_install.sh
             # alternatively, you can source it from online script:
             #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/grafana_check_install.sh")
@@ -318,11 +254,6 @@ spec:
             DASHBOARD_DEFN="/tmp/istio.json"
             curl -sSL https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/istio.json -o $DASHBOARD_DEFN
             source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/grafana_check_install.sh")
-        - name: post-execution-script
-          value: |
-            # Keep APP_URL in build.properties shuttle file
-            echo "APP_URL=$APP_URL" >> build.properties
-            cat build.properties
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
@@ -341,24 +272,6 @@ spec:
           value: $(params.dev-resource-group)
         - name: cluster-name
           value: $(params.cluster-name)
-        - name: setup-script
-          value: |
-            export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
-            export HOST=''
-            export ROLLOUT_DASHBOARD=$ROLLOUT_DASHBOARD
-            export buildprops="build.properties"
-            # pipeline build number is the doi build record id (if any)
-            export SOURCE_BUILD_NUMBER=$BUILD_NUMBER
-            echo "SOURCE_BUILD_NUMBER=$BUILD_NUMBER" >> build.properties
-            # For doi plugin invocation if needed
-            export TOOLCHAIN_ID=$PIPELINE_TOOLCHAIN_ID
-            # Single tag for the image built
-            export IMAGE_TAG=$IMAGE_TAGS
-            # Keep it in build.properties shuttle file
-            echo "IMAGE_TAG=$IMAGE_TAGS" >> build.properties
-            echo "================"
-            cat build.properties
-            echo "================"
         - name: script
           value: |
             #!/bin/bash
@@ -371,11 +284,6 @@ spec:
 
             # Check Istio installation in target cluster
             source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/bookinfo_check_install.sh")
-        - name: post-execution-script
-          value: |
-            # Keep APP_URL in build.properties shuttle file
-            echo "APP_URL=$APP_URL" >> build.properties
-            cat build.properties
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
@@ -398,12 +306,6 @@ spec:
           value: |
             export EXPERIMENT_TEMPLATE_FILE="iter8/experiment.yaml"
             export EXPERIMENT_NAME=''
-            export buildprops="build.properties"
-            # pipeline build number is the doi build record id (if any)
-            export SOURCE_BUILD_NUMBER=$BUILD_NUMBER
-            echo "SOURCE_BUILD_NUMBER=$BUILD_NUMBER" >> build.properties
-            # For doi plugin invocation if needed
-            export TOOLCHAIN_ID=$PIPELINE_TOOLCHAIN_ID
             # Single tag for the image built
             export IMAGE_TAG=$IMAGE_TAGS
             # Keep it in build.properties shuttle file
@@ -426,14 +328,11 @@ spec:
             export EXPERIMENT_NAME=$(yq read ${EXPERIMENT_TEMPLATE_FILE} metadata.name)-${GIT_BRANCH}-${BUILD_NUMBER}
             echo "EXPERIMENT_NAME=${EXPERIMENT_NAME}"
 
-            # Record names in build.properties for use by later stages
-            #   append to existing build.properties if already defined
-            cp build.properties ./ || :
-            echo "EXPERIMENT_NAME=${EXPERIMENT_NAME}" >> build.properties
         - name: post-execution-script
           value: |
-            # Keep APP_URL in build.properties shuttle file
-            echo "APP_URL=$APP_URL" >> build.properties
+            # Record names in build.properties for use by later stages
+            #   append to existing build.properties if already defined
+            echo "EXPERIMENT_NAME=${EXPERIMENT_NAME}" >> build.properties
             cat build.properties
         - name: pipeline-debug
           value: $(params.pipeline-debug)
