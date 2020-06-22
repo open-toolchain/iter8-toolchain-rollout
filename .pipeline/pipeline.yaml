@@ -250,6 +250,7 @@ spec:
             #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/grafana_check_install.sh")
 
             # TODO - Needs to revisit Grafana metrics add-on
+            # currently failing with unauthorized
             kubectl -n istio-system port-forward $(kubectl -n istio-system get pod -l app=grafana -o jsonpath='{.items[0].metadata.name}') 3000:3000&
 
             # Check Istio installation in target cluster
@@ -275,6 +276,10 @@ spec:
           value: $(params.dev-resource-group)
         - name: cluster-name
           value: $(params.cluster-name)
+        - name: setup-script
+          value: |
+            export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
+            export HOST=''
         - name: script
           value: |
             #!/bin/bash
