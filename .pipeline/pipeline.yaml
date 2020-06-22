@@ -398,6 +398,8 @@ spec:
           value: |
             # Keep DEPLOYMENT_FILE in build.properties shuttle file
             echo "DEPLOYMENT_FILE=$DEPLOYMENT_FILE" >> build.properties
+            # Keep PATCH_FILE in build.properties shuttle file
+            echo "PATCH_FILE=$PATCH_FILE" >> build.properties
             cat build.properties
         - name: pipeline-debug
           value: $(params.pipeline-debug)
@@ -437,11 +439,6 @@ spec:
             # image registry (using an IBM Cloud API Key). It also configures Helm Tiller service to later perform a deploy with Helm.
             touch ${DEPLOYMENT_FILE}
             source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_predeploy_kubectl.sh")
-        - name: post-execution-script
-          value: |
-            # Keep APP_URL in build.properties shuttle file
-            echo "APP_URL=$APP_URL" >> build.properties
-            cat build.properties
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
