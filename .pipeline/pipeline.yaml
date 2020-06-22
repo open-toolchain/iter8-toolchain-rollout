@@ -396,8 +396,8 @@ spec:
             source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/create_experiment.sh")
         - name: post-execution-script
           value: |
-            # Keep APP_URL in build.properties shuttle file
-            echo "APP_URL=$APP_URL" >> build.properties
+            # Keep DEPLOYMENT_FILE in build.properties shuttle file
+            echo "DEPLOYMENT_FILE=$DEPLOYMENT_FILE" >> build.properties
             cat build.properties
         - name: pipeline-debug
           value: $(params.pipeline-debug)
@@ -487,11 +487,6 @@ spec:
             echo "Rollout Dashboard:"
             kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}' || true
             echo ""
-        - name: post-execution-script
-          value: |
-            # Keep APP_URL in build.properties shuttle file
-            echo "APP_URL=$APP_URL" >> build.properties
-            cat build.properties
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
@@ -513,23 +508,7 @@ spec:
         - name: setup-script
           value: |
             export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
-            export API_KEY="$(params.apikey)"
-            export buildprops="build.properties"
-            export PROD_REGION_ID=$(params.dev-region)
-            export PROD_RESOURCE_GROUP=$(params.dev-resource-group)
-            export PROD_CLUSTER_NAME=$(params.cluster-name)
-            export ROLLOUT_DASHBOARD=$ROLLOUT_DASHBOARD
-            export PATCH_FILE="kustomize/patch.yaml"
-            export EXPERIMENT_TEMPLATE_FILE="iter8/experiment.yaml"
-            # pipeline build number is the doi build record id (if any)
-            export SOURCE_BUILD_NUMBER=$BUILD_NUMBER
-            echo "SOURCE_BUILD_NUMBER=$BUILD_NUMBER" >> build.properties
-            # For doi plugin invocation if needed
-            export TOOLCHAIN_ID=$PIPELINE_TOOLCHAIN_ID
-            # Single tag for the image built
-            export IMAGE_TAG=$IMAGE_TAGS
-            # Keep it in build.properties shuttle file
-            echo "IMAGE_TAG=$IMAGE_TAGS" >> build.properties
+            export IDS_STAGE_NAME="wait-and-cleanup"
             echo "================"
             cat build.properties
             echo "================"
