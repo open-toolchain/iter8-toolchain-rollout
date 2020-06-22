@@ -249,6 +249,9 @@ spec:
             # alternatively, you can source it from online script:
             #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/grafana_check_install.sh")
 
+            # TODO - Needs to revisit Grafana metrics add-on
+            kubectl -n istio-system port-forward $(kubectl -n istio-system get pod -l app=grafana -o jsonpath='{.items[0].metadata.name}') 3000:3000&
+
             # Check Istio installation in target cluster
             GRAFANA_URL=${ROLLOUT_DASHBOARD}
             DASHBOARD_DEFN="/tmp/istio.json"
