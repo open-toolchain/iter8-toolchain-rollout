@@ -47,16 +47,18 @@ spec:
 
             # Override experiment as successful or failure
             if [ "$OPERATION" == "rollforward" ]; then
-              patch_json='[{"op": "add", "path": "/spec/assessment", "value": "override_success"}]'
+              kubectl --namespace ${CLUSTER_NAMESPACE} \
+                patch experiment ${EXPERIMENT_NAME} \
+                --type=json -p '[{"op": "add", "path": "/spec/assessment", "value": "override_success"}]' \
+              || true # don't fail when the experiment can't be found
             else
               echo "Stop iter8 experiment if still running"
-              patch_json='[{"op": "add", "path": "/spec/assessment", "value": "override_failure"}]'
+              kubectl --namespace ${CLUSTER_NAMESPACE} \
+                patch experiment ${EXPERIMENT_NAME} \
+                --type=json -p '[{"op": "add", "path": "/spec/assessment", "value": "override_failure"}]' \
+              || true # don't fail when the experiment can't be found
             fi
 
-            kubectl --namespace ${CLUSTER_NAMESPACE} \
-              patch experiment ${EXPERIMENT_NAME} \
-              --type=json -p $patch_json \
-            || true # don't fail when the experiment can't be found
 
             # Wait for termination and delete baseline deployment
             FORCE_TERMINATION=true
