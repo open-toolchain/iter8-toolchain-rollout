@@ -234,7 +234,7 @@ spec:
     - name: check-dashboard-config
       taskRef:
         name: iks-deploy-to-kubernetes
-      runAfter: [check-iter8-config]
+      runAfter: [check-istio-config]
       params:
         - name: shuttle-properties-file
           value: "build.properties"
@@ -271,7 +271,7 @@ spec:
     - name: check-app-config
       taskRef:
         name: iks-deploy-to-kubernetes
-      runAfter: [check-dashboard-config]
+      runAfter: [check-istio-config]
       params:
         - name: shuttle-properties-file
           value: "build.properties"
@@ -305,7 +305,7 @@ spec:
     - name: prepare-candidate-rollout
       taskRef:
         name: iks-deploy-to-kubernetes
-      runAfter: [check-app-config]
+      runAfter: [vulnerability-advisor]
       params:
         - name: shuttle-properties-file
           value: "build.properties"
@@ -357,7 +357,7 @@ spec:
     - name: configure-rollout
       taskRef:
         name: iks-deploy-to-kubernetes
-      runAfter: [prepare-candidate-rollout]
+      runAfter: [prepare-candidate-rollout, check-iter8-config]
       params:
         - name: shuttle-properties-file
           value: "build.properties"
