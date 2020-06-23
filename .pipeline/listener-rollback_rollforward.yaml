@@ -1,0 +1,100 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: iter8-rollback_rollforward
+spec:
+  params:
+    - name: experiment-name
+      description: application name
+    - name: cluster-name
+      description: the name of the cluster to target
+    - name: dev-region
+    - name: dev-resource-group
+    - name: dev-cluster-namespace
+      description: namespace dev
+    - name: operation
+    - name: pipeline-debug
+      default: "0"
+  resourcetemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: iter8-$(params.operation)-$(uid)-pvc
+      spec:
+        resources:
+          requests:
+            storage: 5Gi
+        volumeMode: Filesystem
+        accessModes:
+          - ReadWriteOnce
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        name: iter8-$(params.operation)-$(uid)
+      spec:
+        pipelineRef:
+          name: iter8-rollback_rollforward-pipeline
+        params:
+          - name: experiment-name
+            value: $(params.experiment-name)
+          - name: operation
+            value: $(params.operation)
+          - name: dev-region
+            value: $(params.dev-region)
+          - name: dev-resource-group
+            value: $(params.dev-resource-group)
+          - name: cluster-name
+            value: $(params.cluster-name)
+          - name: dev-cluster-namespace
+            value: $(params.dev-cluster-namespace)
+          - name: pipeline-debug
+            value: $(params.pipeline-debug)
+        workspaces:
+          - name: pipeline-ws
+            persistentVolumeClaim:
+              claimName: iter8-$(params.operation)-$(uid)-pvc
+---
+apiVersion: tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: manual-rollback
+spec:
+  params:
+    - name: experiment-name  
+      value: $(params.experiment-name)
+    - name: operation
+      value: "rollback"
+---
+apiVersion: tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: manual-rollback
+spec:
+  triggers:
+    - binding:
+        name: manual-rollback
+      template:
+        name: iter8-rollback_rollforward
+---
+apiVersion: tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: manual-rollforward
+spec:
+  params:
+    - name: experiment-name  
+      value: $(params.experiment-name)
+    - name: operation
+      value: "rollforward"
+---
+apiVersion: tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: manual-rollforward
+spec:
+  triggers:
+    - binding:
+        name: manual-rollforward
+      template:
+        name: iter8-rollback_rollforward
