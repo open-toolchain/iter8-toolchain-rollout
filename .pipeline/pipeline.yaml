@@ -261,13 +261,13 @@ spec:
             # https://github.com/iter8-tools/docs/blob/v0.1.1/doc_files/grafana.md#istio-telemetry-v1-and-kubernetes-116-and-later
 
             # currently failing with unauthorized
-            kubectl -n istio-system port-forward $(kubectl -n istio-system get pod -l app=grafana -o jsonpath='{.items[0].metadata.name}') 3000:3000&
+            #kubectl -n istio-system port-forward $(kubectl -n istio-system get pod -l app=grafana -o jsonpath='{.items[0].metadata.name}') 3000:3000&
 
             # Check Istio installation in target cluster
-            GRAFANA_URL=$(params.grafana-dashboard-url)
-            DASHBOARD_DEFN="/tmp/istio.json"
-            curl -sSL https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/istio.json -o $DASHBOARD_DEFN
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/grafana_check_install.sh")
+            #GRAFANA_URL=$(params.grafana-dashboard-url)
+            #DASHBOARD_DEFN="/tmp/istio.json"
+            #curl -sSL https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/istio.json -o $DASHBOARD_DEFN
+            #source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/grafana_check_install.sh")
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
