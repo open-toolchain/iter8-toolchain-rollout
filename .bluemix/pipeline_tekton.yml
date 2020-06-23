@@ -34,7 +34,7 @@ inputs:
     path: temp/utils
 triggers:
   - type: manual
-    name: Manual Trigger
+    name: manual-trigger
     eventListener: manual-run
     properties:
       - type: text
@@ -43,6 +43,20 @@ triggers:
       - type: text
         name: repository
         value: ${APP_REPO_FULL}
+  - type: manual
+    name: immediate-rollforward
+    eventListener: manual-rollforward
+    properties:
+      - type: text
+        name: experiment-name
+        value: ""
+  - type: manual
+    name: immediate-rollback
+    eventListener: manual-rollback
+    properties:
+      - type: text
+        name: experiment-name
+        value: ""
   - type: git
     name: commit-push
     eventListener: ${GIT_COMMIT_EVENT_LISTENER_NAME}

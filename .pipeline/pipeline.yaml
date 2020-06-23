@@ -134,11 +134,11 @@ spec:
             TIMESTAMP=$( date -u "+%Y%m%d%H%M%S")
             IMAGE_TAG=${TIMESTAMP}
             if [ ! -z "${GIT_COMMIT}" ]; then
-              GIT_COMMIT_SHORT=$( echo ${GIT_COMMIT} | head -c 8 ) 
+              GIT_COMMIT_SHORT=$( echo ${GIT_COMMIT} | head -c 8 )
               IMAGE_TAG=${GIT_COMMIT_SHORT}-${IMAGE_TAG}
             fi
             if [ ! -z "${GIT_BRANCH}" ]; then IMAGE_TAG=${GIT_BRANCH}-${IMAGE_TAG} ; fi
-            IMAGE_TAG=${BUILD_NUMBER}-${IMAGE_TAG}          
+            IMAGE_TAG=${BUILD_NUMBER}-${IMAGE_TAG}
             echo "$IMAGE_TAG"
         - name: pipeline-debug
           value: $(params.pipeline-debug)
@@ -234,7 +234,7 @@ spec:
     - name: check-dashboard-config
       taskRef:
         name: iks-deploy-to-kubernetes
-      runAfter: [check-iter8-config]
+      runAfter: [check-istio-config]
       params:
         - name: shuttle-properties-file
           value: "build.properties"
@@ -271,7 +271,7 @@ spec:
     - name: check-app-config
       taskRef:
         name: iks-deploy-to-kubernetes
-      runAfter: [check-dashboard-config]
+      runAfter: [check-istio-config]
       params:
         - name: shuttle-properties-file
           value: "build.properties"
@@ -296,7 +296,11 @@ spec:
             #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/bookinfo_check_install.sh")
 
             # Check Istio installation in target cluster
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/bookinfo_check_install.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/bookinfo_check_install.sh")
+        - name: post-execution-script
+          value: |
+            echo "APP_URL=${APP_URL}" >> build.properties
+            cat build.properties
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
@@ -305,7 +309,7 @@ spec:
     - name: prepare-candidate-rollout
       taskRef:
         name: iks-deploy-to-kubernetes
-      runAfter: [check-app-config]
+      runAfter: [vulnerability-advisor]
       params:
         - name: shuttle-properties-file
           value: "build.properties"
@@ -357,7 +361,7 @@ spec:
     - name: configure-rollout
       taskRef:
         name: iks-deploy-to-kubernetes
-      runAfter: [prepare-candidate-rollout]
+      runAfter: [prepare-candidate-rollout, check-iter8-config]
       params:
         - name: shuttle-properties-file
           value: "build.properties"
@@ -531,4 +535,3 @@ spec:
       workspaces:
         - name: artifacts
           workspace: pipeline-ws
-
