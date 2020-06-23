@@ -66,4 +66,3 @@ spec:
       workspaces:
         - name: artifacts
           workspace: pipeline-ws
-      

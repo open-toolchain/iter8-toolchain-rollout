@@ -61,7 +61,7 @@ metadata:
   name: manual-rollback
 spec:
   params:
-    - name: experiment-name  
+    - name: experiment-name
       value: $(params.experiment-name)
     - name: operation
       value: "rollback"
@@ -83,7 +83,7 @@ metadata:
   name: manual-rollforward
 spec:
   params:
-    - name: experiment-name  
+    - name: experiment-name
       value: $(params.experiment-name)
     - name: operation
       value: "rollforward"
