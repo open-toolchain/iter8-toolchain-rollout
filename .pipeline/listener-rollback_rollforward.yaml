@@ -75,7 +75,7 @@ spec:
     - binding:
         name: manual-rollback
       template:
-        name: iter8-rollback_rollforward
+        name: iter8-roll
 ---
 apiVersion: tekton.dev/v1beta1
 kind: TriggerBinding
@@ -97,4 +97,4 @@ spec:
     - binding:
         name: manual-rollforward
       template:
-        name: iter8-rollback_rollforward
+        name: iter8-roll
