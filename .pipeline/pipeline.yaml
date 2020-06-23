@@ -293,10 +293,10 @@ spec:
             # copy the script below into your app code repo (e.g. ./scripts/bookinfo_check_install.sh) and 'source' it from your pipeline job
             #    source ./scripts/bookinfo_check_install.sh
             # alternatively, you can source it from online script:
-            #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/bookinfo_check_install.sh")
+            #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/bookinfo_check_install.sh")
 
             # Check Istio installation in target cluster
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/bookinfo_check_install.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/jauninb/iter8-toolchain-rollout/dual-template/scripts/bookinfo_check_install.sh")
         - name: post-execution-script
           value: |
             echo "APP_URL=${APP_URL}" >> build.properties
