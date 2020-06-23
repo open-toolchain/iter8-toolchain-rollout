@@ -75,12 +75,14 @@ spec:
           number: 9080
 EOF
 
-PORT=$(kubectl -n istio-system get svc istio-ingressgateway -o jsonpath='{.spec.ports[?(@.targetPort==80)].nodePort}')
-IP=$(kubectl -n istio-system get svc istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-if [[ ! ${IP} ]]; then
-  IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type == "ExternalIP")].address}')
+# Find the information to access the application
+# https://cloud.ibm.com/docs/containers?topic=containers-istio-mesh#istio_access_bookinfo
+INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].port}')
+if [[ ! ${INGRESS_IP} ]]; then
+  INGRESS_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type == "ExternalIP")].address}')
 fi
-APP_URL="http://${IP}:${PORT}/productpage"
+APP_URL="http://${INGRESS_IP}:${INGRESS_PORT}/productpage"
 
 echo "Application URL: ${APP_URL}"
 if [[ -z ${HOST} ]]; then
