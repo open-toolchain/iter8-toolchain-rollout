@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
-  name: iter8-rollback_rollforward
+  name: iter8-roll
 spec:
   params:
     - name: experiment-name
@@ -34,7 +34,7 @@ spec:
         name: iter8-$(params.operation)-$(uid)
       spec:
         pipelineRef:
-          name: iter8-rollback_rollforward-pipeline
+          name: iter8-roll-pipeline
         params:
           - name: experiment-name
             value: $(params.experiment-name)

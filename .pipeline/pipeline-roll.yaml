@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: iter8-rollback_rollforward-pipeline
+  name: iter8-roll-pipeline
 spec:
   params:
     - name: experiment-name
