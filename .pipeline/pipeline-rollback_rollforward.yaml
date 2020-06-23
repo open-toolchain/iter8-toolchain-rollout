@@ -40,6 +40,11 @@ spec:
             # uncomment to debug the script
             # set -x
 
+            if [ -z "$EXPERIMENT_NAME" ]; then
+              echo "No experiment provided. Exiting"
+              exit 1
+            fi
+
             # Override experiment as successful or failure
             if [ "$OPERATION" == "rollforward" ]; then
               patch_json='[{"op": "add", "path": "/spec/assessment", "value": "override_success"}]'
