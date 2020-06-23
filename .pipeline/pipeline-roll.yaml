@@ -49,7 +49,7 @@ spec:
             if [ "$OPERATION" == "rollforward" ]; then
               patch_json='[{"op": "add", "path": "/spec/assessment", "value": "override_success"}]'
             else
-            echo "Stop iter8 experiment if still running"
+              echo "Stop iter8 experiment if still running"
               patch_json='[{"op": "add", "path": "/spec/assessment", "value": "override_failure"}]'
             fi
 
