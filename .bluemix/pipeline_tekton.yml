@@ -23,6 +23,10 @@ inputs:
   - type: git
     branch: master
     service: ${TEKTON_CATALOG_REPO}
+    path: kubernetes-service
+  - type: git
+    branch: master
+    service: ${TEKTON_CATALOG_REPO}
     path: linter
   - type: git
     branch: master
