@@ -92,7 +92,7 @@ spec:
     - name: docker-lint
       runAfter: [git-clone]
       taskRef:
-        name: docker-lint
+        name: linter-docker-lint
       params:
         # - name: hadolint-ignored-rules
         #   value: "DL3017,DL3020,DL3003"
