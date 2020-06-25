@@ -34,16 +34,6 @@ inputs:
     path: utils
 triggers:
   - type: manual
-    name: manual-trigger
-    eventListener: manual-run
-    properties:
-      - type: text
-        name: branch
-        value: master
-      - type: text
-        name: repository
-        value: ${APP_REPO_FULL}
-  - type: manual
     name: immediate-rollforward
     eventListener: manual-rollforward
     properties:
