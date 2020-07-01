@@ -314,7 +314,7 @@ spec:
     - name: prepare-candidate-rollout
       taskRef:
         name: iks-deploy-to-kubernetes
-      runAfter: [vulnerability-advisor, check-iter8-config]
+      runAfter: [vulnerability-advisor, check-iter8-config, check-app-config, check-dashboard-config]
       params:
         - name: shuttle-properties-file
           value: "build.properties"
