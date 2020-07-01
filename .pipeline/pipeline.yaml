@@ -363,6 +363,58 @@ spec:
       workspaces:
         - name: artifacts
           workspace: pipeline-ws
+    - name: configure-rollout
+      taskRef:
+        name: iks-deploy-to-kubernetes
+      runAfter: [prepare-candidate-rollout, check-iter8-config]
+      params:
+        - name: shuttle-properties-file
+          value: "build.properties"
+        - name: cluster-region
+          value: $(params.dev-region)
+        - name: resource-group
+          value: $(params.dev-resource-group)
+        - name: cluster-name
+          value: $(params.cluster-name)
+        - name: setup-script
+          value: |
+            export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
+            export ROLLOUT_DASHBOARD=$(params.grafana-dashboard-url)
+            export PATCH_FILE=$(params.kustomize-patch-file)
+            echo "================"
+            cat build.properties
+            echo "================"
+        - name: script
+          value: |
+            #!/bin/bash
+            # uncomment to debug the script
+            # set -x
+
+            # Identify canary deployment name from the deployment yaml
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/create_deployment.sh")
+            CANDIDATE_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)
+
+            # Identify baseline deployment by searching the cluster
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/identify_stable.sh")
+            if [[ -z $BASELINE_DEPLOYMENT_NAME ]]; then BASELINE_DEPLOYMENT_NAME=$CANDIDATE_DEPLOYMENT_NAME; fi
+
+            # Run canary experiment using iter8
+            echo "BASELINE_DEPLOYMENT_NAME=${BASELINE_DEPLOYMENT_NAME}"
+            echo "CANDIDATE_DEPLOYMENT_NAME=$CANDIDATE_DEPLOYMENT_NAME"
+            ON_SUCCESS=candidate
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/create_experiment.sh")
+        - name: post-execution-script
+          value: |
+            # Keep DEPLOYMENT_FILE in build.properties shuttle file
+            echo "DEPLOYMENT_FILE=$DEPLOYMENT_FILE" >> build.properties
+            # Keep PATCH_FILE in build.properties shuttle file
+            echo "PATCH_FILE=$PATCH_FILE" >> build.properties
+            cat build.properties
+        - name: pipeline-debug
+          value: $(params.pipeline-debug)
+      workspaces:
+        - name: artifacts
+          workspace: pipeline-ws
     - name: pre-deploy-check
       taskRef:
         name: iks-deploy-to-kubernetes
@@ -441,58 +493,6 @@ spec:
             echo "Rollout Dashboard:"
             kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}' || true
             echo ""
-        - name: pipeline-debug
-          value: $(params.pipeline-debug)
-      workspaces:
-        - name: artifacts
-          workspace: pipeline-ws
-    - name: configure-rollout
-      taskRef:
-        name: iks-deploy-to-kubernetes
-      runAfter: [prepare-candidate-rollout, check-iter8-config, deploy-to-kubernetes]
-      params:
-        - name: shuttle-properties-file
-          value: "build.properties"
-        - name: cluster-region
-          value: $(params.dev-region)
-        - name: resource-group
-          value: $(params.dev-resource-group)
-        - name: cluster-name
-          value: $(params.cluster-name)
-        - name: setup-script
-          value: |
-            export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
-            export ROLLOUT_DASHBOARD=$(params.grafana-dashboard-url)
-            export PATCH_FILE=$(params.kustomize-patch-file)
-            echo "================"
-            cat build.properties
-            echo "================"
-        - name: script
-          value: |
-            #!/bin/bash
-            # uncomment to debug the script
-            # set -x
-
-            # Identify canary deployment name from the deployment yaml
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/create_deployment.sh")
-            CANDIDATE_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)
-
-            # Identify baseline deployment by searching the cluster
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/identify_stable.sh")
-            if [[ -z $BASELINE_DEPLOYMENT_NAME ]]; then BASELINE_DEPLOYMENT_NAME=$CANDIDATE_DEPLOYMENT_NAME; fi
-
-            # Run canary experiment using iter8
-            echo "BASELINE_DEPLOYMENT_NAME=${BASELINE_DEPLOYMENT_NAME}"
-            echo "CANDIDATE_DEPLOYMENT_NAME=$CANDIDATE_DEPLOYMENT_NAME"
-            ON_SUCCESS=candidate
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/create_experiment.sh")
-        - name: post-execution-script
-          value: |
-            # Keep DEPLOYMENT_FILE in build.properties shuttle file
-            echo "DEPLOYMENT_FILE=$DEPLOYMENT_FILE" >> build.properties
-            # Keep PATCH_FILE in build.properties shuttle file
-            echo "PATCH_FILE=$PATCH_FILE" >> build.properties
-            cat build.properties
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
