@@ -222,10 +222,10 @@ spec:
             # copy the script below into your app code repo (e.g. ./scripts/iter8_check_install.sh) and 'source' it from your pipeline job
             #    source ./scripts/iter8_check_install.sh
             # alternatively, you can source it from online script:
-            #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/iter8_check_install.sh")
+            #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/iter8_check_install.sh")
 
             # Check Istio installation in target cluster
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/iter8_check_install.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/iter8_check_install.sh")
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
@@ -252,7 +252,7 @@ spec:
             # copy the script below into your app code repo (e.g. ./scripts/grafana_check_install.sh) and 'source' it from your pipeline job
             #    source ./scripts/grafana_check_install.sh
             # alternatively, you can source it from online script:
-            #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/grafana_check_install.sh")
+            #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/grafana_check_install.sh")
 
             # Grafana metrics add-on to Istio
             # https://cloud.ibm.com/docs/containers?topic=containers-istio#customize
@@ -266,8 +266,8 @@ spec:
             # Check Istio installation in target cluster
             #GRAFANA_URL=$(params.grafana-dashboard-url)
             #DASHBOARD_DEFN="/tmp/istio.json"
-            #curl -sSL https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/istio.json -o $DASHBOARD_DEFN
-            #source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/grafana_check_install.sh")
+            #curl -sSL https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/istio.json -o $DASHBOARD_DEFN
+            #source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/grafana_check_install.sh")
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
@@ -298,7 +298,7 @@ spec:
             # copy the script below into your app code repo (e.g. ./scripts/bookinfo_check_install.sh) and 'source' it from your pipeline job
             #    source ./scripts/bookinfo_check_install.sh
             # alternatively, you can source it from online script:
-            #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/bookinfo_check_install.sh")
+            #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/bookinfo_check_install.sh")
 
             # Check Istio installation in target cluster
             source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/bookinfo_check_install.sh")
@@ -357,58 +357,6 @@ spec:
             #   append to existing build.properties if already defined
             echo "EXPERIMENT_NAME=${EXPERIMENT_NAME}" >> build.properties
             echo "EXPERIMENT_TEMPLATE_FILE=${EXPERIMENT_TEMPLATE_FILE}" >> build.properties
-            cat build.properties
-        - name: pipeline-debug
-          value: $(params.pipeline-debug)
-      workspaces:
-        - name: artifacts
-          workspace: pipeline-ws
-    - name: configure-rollout
-      taskRef:
-        name: iks-deploy-to-kubernetes
-      runAfter: [prepare-candidate-rollout, check-iter8-config]
-      params:
-        - name: shuttle-properties-file
-          value: "build.properties"
-        - name: cluster-region
-          value: $(params.dev-region)
-        - name: resource-group
-          value: $(params.dev-resource-group)
-        - name: cluster-name
-          value: $(params.cluster-name)
-        - name: setup-script
-          value: |
-            export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
-            export ROLLOUT_DASHBOARD=$(params.grafana-dashboard-url)
-            export PATCH_FILE=$(params.kustomize-patch-file)
-            echo "================"
-            cat build.properties
-            echo "================"
-        - name: script
-          value: |
-            #!/bin/bash
-            # uncomment to debug the script
-            # set -x
-
-            # Identify canary deployment name from the deployment yaml
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/create_deployment.sh")
-            CANDIDATE_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)
-
-            # Identify baseline deployment by searching the cluster
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/identify_stable.sh")
-            if [[ -z $BASELINE_DEPLOYMENT_NAME ]]; then BASELINE_DEPLOYMENT_NAME=$CANDIDATE_DEPLOYMENT_NAME; fi
-
-            # Run canary experiment using iter8
-            echo "BASELINE_DEPLOYMENT_NAME=${BASELINE_DEPLOYMENT_NAME}"
-            echo "CANDIDATE_DEPLOYMENT_NAME=$CANDIDATE_DEPLOYMENT_NAME"
-            ON_SUCCESS=candidate
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/create_experiment.sh")
-        - name: post-execution-script
-          value: |
-            # Keep DEPLOYMENT_FILE in build.properties shuttle file
-            echo "DEPLOYMENT_FILE=$DEPLOYMENT_FILE" >> build.properties
-            # Keep PATCH_FILE in build.properties shuttle file
-            echo "PATCH_FILE=$PATCH_FILE" >> build.properties
             cat build.properties
         - name: pipeline-debug
           value: $(params.pipeline-debug)
@@ -479,9 +427,9 @@ spec:
             # copy the script below into your app code repo (e.g. ./scripts/create_deployment.sh) and 'source' it from your pipeline job
             #    source ./scripts/create_deployment.sh
             # alternatively, you can source it from online script:
-            #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/create_deployment.sh")
+            #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/create_deployment.sh")
             # Create canary deployment yaml
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/create_deployment.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/create_deployment.sh")
 
             # copy the script below into your app code repo (e.g. ./scripts/deploy_kubectl.sh) and 'source' it from your pipeline job
             #    source ./scripts/deploy_kubectl.sh
@@ -493,6 +441,58 @@ spec:
             echo "Rollout Dashboard:"
             kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}' || true
             echo ""
+        - name: pipeline-debug
+          value: $(params.pipeline-debug)
+      workspaces:
+        - name: artifacts
+          workspace: pipeline-ws
+    - name: configure-rollout
+      taskRef:
+        name: iks-deploy-to-kubernetes
+      runAfter: [prepare-candidate-rollout, check-iter8-config, deploy-to-kubernetes]
+      params:
+        - name: shuttle-properties-file
+          value: "build.properties"
+        - name: cluster-region
+          value: $(params.dev-region)
+        - name: resource-group
+          value: $(params.dev-resource-group)
+        - name: cluster-name
+          value: $(params.cluster-name)
+        - name: setup-script
+          value: |
+            export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
+            export ROLLOUT_DASHBOARD=$(params.grafana-dashboard-url)
+            export PATCH_FILE=$(params.kustomize-patch-file)
+            echo "================"
+            cat build.properties
+            echo "================"
+        - name: script
+          value: |
+            #!/bin/bash
+            # uncomment to debug the script
+            # set -x
+
+            # Identify canary deployment name from the deployment yaml
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/create_deployment.sh")
+            CANDIDATE_DEPLOYMENT_NAME=$(yq r ${DEPLOYMENT_FILE} metadata.name)
+
+            # Identify baseline deployment by searching the cluster
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/identify_stable.sh")
+            if [[ -z $BASELINE_DEPLOYMENT_NAME ]]; then BASELINE_DEPLOYMENT_NAME=$CANDIDATE_DEPLOYMENT_NAME; fi
+
+            # Run canary experiment using iter8
+            echo "BASELINE_DEPLOYMENT_NAME=${BASELINE_DEPLOYMENT_NAME}"
+            echo "CANDIDATE_DEPLOYMENT_NAME=$CANDIDATE_DEPLOYMENT_NAME"
+            ON_SUCCESS=candidate
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/create_experiment.sh")
+        - name: post-execution-script
+          value: |
+            # Keep DEPLOYMENT_FILE in build.properties shuttle file
+            echo "DEPLOYMENT_FILE=$DEPLOYMENT_FILE" >> build.properties
+            # Keep PATCH_FILE in build.properties shuttle file
+            echo "PATCH_FILE=$PATCH_FILE" >> build.properties
+            cat build.properties
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
@@ -526,10 +526,10 @@ spec:
             # copy the script below into your app code repo (e.g. ./scripts/wait_complete.sh) and 'source' it from your pipeline job
             #    source ./scripts/wait_complete.sh
             # alternatively, you can source it from online script:
-            #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/wait_complete.sh")
+            #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/wait_complete.sh")
 
             # Check liveness and readiness probes to confirm application is healthy
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/wait_complete.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/wait_complete.sh")
         - name: post-execution-script
           value: |
             # Keep APP_URL in build.properties shuttle file
