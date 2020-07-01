@@ -173,7 +173,7 @@ spec:
     - name: check-istio-config
       taskRef:
         name: iks-deploy-to-kubernetes
-      runAfter: [vulnerability-advisor]
+      runAfter: [git-clone]
       params:
         - name: shuttle-properties-file
           value: "build.properties"
@@ -314,7 +314,7 @@ spec:
     - name: prepare-candidate-rollout
       taskRef:
         name: iks-deploy-to-kubernetes
-      runAfter: [vulnerability-advisor]
+      runAfter: [vulnerability-advisor, check-iter8-config]
       params:
         - name: shuttle-properties-file
           value: "build.properties"
@@ -366,7 +366,7 @@ spec:
     - name: configure-rollout
       taskRef:
         name: iks-deploy-to-kubernetes
-      runAfter: [prepare-candidate-rollout, check-iter8-config]
+      runAfter: [prepare-candidate-rollout]
       params:
         - name: shuttle-properties-file
           value: "build.properties"
