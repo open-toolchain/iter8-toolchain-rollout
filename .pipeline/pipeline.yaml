@@ -14,6 +14,10 @@ spec:
       default: ""
     - name: path-to-dockerfile
       default: '.'
+    - name: fail-on-lint-errors
+      description: force failure of task when docker lint errors are found ("true" | "false")
+    - name: fail-on-scanned-issues
+      description: force failure of task when vulnerability advisor scan issues are found ("true" | "false")
     - name: registry-region
       description: The IBM Cloud region for image registry
     - name: registry-namespace
@@ -96,10 +100,10 @@ spec:
       params:
         # - name: hadolint-ignored-rules
         #   value: "DL3017,DL3020,DL3003"
+        - name: fail-on-lint-errors
+          value: $(params.fail-on-lint-errors)
         - name: pipeline-debug
           value: $(params.pipeline-debug)
-        - name: fail-on-lint-errors
-          value: "false"
       workspaces:
         - name: workspace
           workspace: pipeline-ws
@@ -155,12 +159,8 @@ spec:
           value: "apikey"
         - name: scan-report-file
           value: 'app-image-va-report.json'
-        # - name: max-iteration
-        #   value: '5'
-        # - name: sleep-time
-        #   value: '3'
-        # - name: fail-on-scanned-issues
-        #   value: 'false'
+        - name: fail-on-scanned-issues
+          value: $(params.fail-on-scanned-issues)
         - name: pipeline-debug
           value: $(params.pipeline-debug)
         - name: image-url
