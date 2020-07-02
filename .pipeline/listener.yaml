@@ -30,7 +30,6 @@ spec:
       default: "false"
     - name: cluster-name
       description: the name of the cluster to target
-    - name: apikey
     - name: dev-region
     - name: dev-resource-group
     - name: dev-cluster-namespace
@@ -82,8 +81,6 @@ spec:
             value: $(params.dev-region)
           - name: dev-resource-group
             value: $(params.dev-resource-group)
-          - name: apikey
-            value: $(params.apikey)
           - name: cluster-name
             value: $(params.cluster-name)
           - name: dev-cluster-namespace

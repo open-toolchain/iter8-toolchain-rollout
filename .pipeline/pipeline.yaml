@@ -28,7 +28,6 @@ spec:
       description: image name
     - name: dev-region
     - name: dev-resource-group
-    - name: apikey
     - name: cluster-name
       description: the name of the cluster to target
     - name: dev-cluster-namespace
@@ -188,20 +187,17 @@ spec:
             #!/bin/bash
             # uncomment to debug the script
             # set -x
-
             # copy the script below into your app code repo (e.g. ./scripts/istio_check_install.sh) and 'source' it from your pipeline job
             #    source ./scripts/istio_check_install.sh
             # alternatively, you can source it from online script:
             #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_check_install.sh")
 
-            # Grafana metrics add-on to Istio
-            # https://cloud.ibm.com/docs/containers?topic=containers-istio#customize
-            # https://cloud.ibm.com/docs/containers?topic=containers-istio-health#istio_health_extras
-            # Including Iter8 dashboard
-            # https://github.com/iter8-tools/docs/blob/v0.1.1/doc_files/grafana.md#istio-telemetry-v1-and-kubernetes-116-and-later
-
             # Check Istio installation in target cluster
             source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/istio_check_install.sh")
+
+            # Prometheus and Grafana metrics add-on to Istio are not installed by default by the Istio add-on
+            # https://cloud.ibm.com/docs/containers?topic=containers-istio-health#enable_optional_monitor
+
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
