@@ -48,18 +48,19 @@ spec:
             # Override experiment as successful or failure
             # https://github.com/iter8-tools/docs/blob/v0.2.1/doc_files/iter8_crd.md#experiment-action-user-provided-action
             if [ "$OPERATION" == "rollforward" ]; then
+              export IDS_STAGE_NAME="immediate-rollforward"
               kubectl --namespace ${CLUSTER_NAMESPACE} \
                 patch experiment ${EXPERIMENT_NAME} \
                 --type=json -p '[{"op": "add", "path": "/action", "value": "override_success"}]' \
               || true # don't fail when the experiment can't be found
             else
+              export IDS_STAGE_NAME="immediate-rollback"
               echo "Stop iter8 experiment if still running"
               kubectl --namespace ${CLUSTER_NAMESPACE} \
                 patch experiment ${EXPERIMENT_NAME} \
                 --type=json -p '[{"op": "add", "path": "/action", "value": "override_failure"}]' \
               || true # don't fail when the experiment can't be found
             fi
-
 
             # Wait for termination and delete baseline deployment
             FORCE_TERMINATION=true
