@@ -375,7 +375,7 @@ stages:
       echo "Stop iter8 experiment if still running"
       kubectl --namespace ${CLUSTER_NAMESPACE} \
         patch experiment ${EXPERIMENT_NAME} \
-        --type=json -p '[{"op": "add", "path": "/spec/assessment", "value": "override_failure"}]' \
+        --type=json -p '[{"op": "add", "path": "/action", "value": "override_failure"}]' \
       || true # don't fail when the experiment can't be found
 
       # Wait for termination and delete canary deployment
@@ -411,7 +411,7 @@ stages:
       # Override experiment as successful
       kubectl --namespace ${CLUSTER_NAMESPACE} \
         patch experiment ${EXPERIMENT_NAME} \
-        --type=json -p '[{"op": "add", "path": "/spec/assessment", "value": "override_success"}]' \
+        --type=json -p '[{"op": "add", "path": "/action", "value": "override_success"}]' \
       || true # don't fail when the experiment can't be found
 
       # Wait for termination and delete baseline deployment

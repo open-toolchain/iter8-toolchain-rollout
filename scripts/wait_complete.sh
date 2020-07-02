@@ -108,10 +108,10 @@ while (( timePassedS < ${DURATION} )); do
     # This depends on the experiment status as well as the stage. 
     # For example, in the IMMEDIATE ROLLBACK stage, we expect the experiment to fail.
 
-    # First consider two unexpeted conditions that always result in failure. These are around
-    # and inconsistency in .spec.assessment and $FORCE_TERMINATION (set by IMMEDIATE ROLLBACK and
+    # First consider two unexpected conditions that always result in failure. These are around
+    # and inconsistency in .action and $FORCE_TERMINATION (set by IMMEDIATE ROLLBACK and
     # IMMEDIATE ROLLFORWARD)
-    _assessment=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} -o jsonpath='{.spec.assessment}')
+    _assessment=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} -o jsonpath='{.action}')
     echo "       _assessment = ${_assessment}"
     if [[ -n ${FORCE_TERMINATION} ]] && [[ -z ${_assessment} ]]; then
       log "Attempt to terminate experiment in stage ${IDS_STAGE_NAME} but success/failure not specified."
