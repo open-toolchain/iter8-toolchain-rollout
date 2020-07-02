@@ -22,8 +22,12 @@ spec:
       description: image name
     - name: path-to-dockerfile
       default: "."
-    - name: pipeline-debug
-      default: "0"
+    - name: fail-on-lint-errors
+      description: force failure of task when docker lint errors are found
+      default: "false"
+    - name: fail-on-scanned-issues
+      description: force failure of task when vulnerability advisor scan issues are found
+      default: "false"
     - name: cluster-name
       description: the name of the cluster to target
     - name: apikey
@@ -32,6 +36,8 @@ spec:
     - name: dev-cluster-namespace
       description: namespace dev
     - name: grafana-dashboard-url
+    - name: pipeline-debug
+      default: "0"
   resourcetemplates:
     - apiVersion: v1
       kind: PersistentVolumeClaim
@@ -60,6 +66,10 @@ spec:
             value: $(params.revision)
           - name: app-name
             value: $(params.app-name)
+          - name: fail-on-lint-errors
+            value: $(params.fail-on-lint-errors)
+          - name: fail-on-scanned-issues
+            value: $(params.fail-on-scanned-issues)
           - name: registry-region
             value: $(params.registry-region)
           - name: registry-namespace
