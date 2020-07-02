@@ -343,9 +343,11 @@ spec:
             if [ ! -f ${EXPERIMENT_TEMPLATE_FILE} ]; then
               echo -e "${red}iter8 experiment template '${EXPERIMENT_TEMPLATE_FILE}' not found${no_color}"
             fi
+            echo "EXPERIMENT_TEMPLATE_FILE=${EXPERIMENT_TEMPLATE_FILE}" >> build.properties
 
             export EXPERIMENT_NAME=$(yq read ${EXPERIMENT_TEMPLATE_FILE} metadata.name)-${GIT_BRANCH}-${BUILD_NUMBER}
             echo "EXPERIMENT_NAME=${EXPERIMENT_NAME}"
+            echo "EXPERIMENT_NAME=${EXPERIMENT_NAME}" >> build.properties
 
             # Identify canary deployment name from the deployment yaml
             source <(curl -sSL "https://raw.githubusercontent.com/jauninb/iter8-toolchain-rollout/dual-template/scripts/create_deployment.sh")
@@ -363,10 +365,6 @@ spec:
 
         - name: post-execution-script
           value: |
-            # Record names in build.properties for use by later stages
-            #   append to existing build.properties if already defined
-            echo "EXPERIMENT_NAME=${EXPERIMENT_NAME}" >> build.properties
-            echo "EXPERIMENT_TEMPLATE_FILE=${EXPERIMENT_TEMPLATE_FILE}" >> build.properties
             # Keep DEPLOYMENT_FILE in build.properties shuttle file
             echo "DEPLOYMENT_FILE=$DEPLOYMENT_FILE" >> build.properties
             # Keep PATCH_FILE in build.properties shuttle file
