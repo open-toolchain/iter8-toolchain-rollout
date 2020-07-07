@@ -162,16 +162,13 @@ stages:
       #!/bin/bash
       # uncomment to debug the script
       # set -x
-      # copy the script below into your app code repo (e.g. ./scripts/bookinfo_check_install.sh) and 'source' it from your pipeline job
-      #    source ./scripts/grafana_check_install.sh
-      # alternatively, you can source it from online script:
-      #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/grafana_check_install.sh")
 
-      # Check Istio installation in target cluster
-      GRAFANA_URL=${ROLLOUT_DASHBOARD}
-      DASHBOARD_DEFN="/tmp/istio.json"
-      curl -sSL https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/istio.json -o $DASHBOARD_DEFN
-      source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/grafana_check_install.sh")
+      # Import iter8's Grafana dashboard
+      # https://github.com/iter8-tools/docs/blob/v0.2.1/doc_files/iter8_install.md#import-iter8s-grafana-dashboard
+
+      kubectl -n istio-system port-forward $(kubectl -n istio-system get pod -l app=grafana -o jsonpath='{.items[0].metadata.name}') 3000:3000&
+
+      source <(curl -sSL "https://raw.githubusercontent.com/iter8-tools/iter8-controller/v0.2.1/hack/grafana_install_dashboard.sh")
   - name: Check app config
     type: deployer
     target:
