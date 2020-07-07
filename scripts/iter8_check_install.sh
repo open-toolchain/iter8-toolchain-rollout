@@ -18,9 +18,8 @@ if kubectl get namespace ${ITER8_NAMESPACE}; then
   echo -e "Namespace ${ITER8_NAMESPACE} found."
 else
   echo "iter8 not found, installing iter8"
-  kubectl apply \
-  -f https://raw.githubusercontent.com/iter8-tools/iter8-controller/master/install/iter8-controller.yaml \
-  -f https://raw.githubusercontent.com/iter8-tools/iter8-analytics/master/install/kubernetes/iter8-analytics.yaml
+  # https://github.com/iter8-tools/docs/blob/v0.2.1/doc_files/iter8_install.md#quick-installation
+  source <(curl -sSL "https://raw.githubusercontent.com/iter8-tools/iter8-controller/v0.2.1/install/install.sh")
 fi
 
 echo ""
