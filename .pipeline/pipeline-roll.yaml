@@ -64,7 +64,7 @@ spec:
 
             # Wait for termination and delete baseline deployment
             FORCE_TERMINATION=true
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/dual-template/scripts/wait_complete.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/wait_complete.sh")
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
