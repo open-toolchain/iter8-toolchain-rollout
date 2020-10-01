@@ -36,7 +36,8 @@ Learn how to implement a progressive rollout of an application using iter8:
 
 ### Learn more
 
-* Step by step [tutorial](https://cloudcontent.mybluemix.net/cloud/garage/tutorials/canary-test-kubernetes-iter8-toolchain)
+* Step by step [tutorial](https://www.ibm.com/cloud/garage/tutorials/canary-test-kubernetes-iter8-toolchain)
+* Learn about [iter8](https://iter8.tools/)
 * Learn about [Istio](https://istio.io/)
 * Blog [Continuously deliver your app to Kubernetes with Bluemix](https://www.ibm.com/blogs/bluemix/2017/07/continuously-deliver-your-app-to-kubernetes-with-bluemix/)
 * [Getting started with IBM Cloud clusters](https://cloud.ibm.com/docs/containers?topic=containers-getting-started)

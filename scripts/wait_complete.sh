@@ -13,8 +13,9 @@
 
 # Constants
 MAX_DURATION=$(( 59*60 ))
-PHASE_SUCCEEDED="Succeeded"
-PHASE_FAILED="Failed"
+PHASE_COMPLETED="Completed"
+CONDITION_EXPERIMENTSUCCEEDED="ExperimentSucceeded"
+CONDITION_EXPERIMENTCOMPLETED="ExperimentCompleted"
 BASELINE="baseline"
 CANDIDATE="candidate"
 OVERRIDE_FAILURE="override_failure"
@@ -63,8 +64,10 @@ timePassedS=0$(( $(date +%s) - $startS ))
 while (( timePassedS < ${DURATION} )); do
   sleep ${SLEEP_TIME}
 
+# '{.status.conditions[?(@.type=="ExperimentSucceeded")].status}'
+
   phase=$(get_experiment_phase)
-  if [[ "${phase}" == "${PHASE_SUCCEEDED}" ]] || [[ "${phase}" == "${PHASE_FAILED}" ]]; then
+  if [[ "${phase}" == "${PHASE_COMPLETED}" ]]; then
     # experiment is done; delete appropriate version
     # if baseline and candidate are the same then don't delete anything
     _baseline=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} -o jsonpath='{.spec.targetService.baseline}')
@@ -105,10 +108,10 @@ while (( timePassedS < ${DURATION} )); do
     # This depends on the experiment status as well as the stage. 
     # For example, in the IMMEDIATE ROLLBACK stage, we expect the experiment to fail.
 
-    # First consider two unexpeted conditions that always result in failure. These are around
-    # and inconsistency in .spec.assessment and $FORCE_TERMINATION (set by IMMEDIATE ROLLBACK and
+    # First consider two unexpected conditions that always result in failure. These are around
+    # and inconsistency in .action and $FORCE_TERMINATION (set by IMMEDIATE ROLLBACK and
     # IMMEDIATE ROLLFORWARD)
-    _assessment=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} -o jsonpath='{.spec.assessment}')
+    _assessment=$(kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} -o jsonpath='{.action}')
     echo "       _assessment = ${_assessment}"
     if [[ -n ${FORCE_TERMINATION} ]] && [[ -z ${_assessment} ]]; then
       log "Attempt to terminate experiment in stage ${IDS_STAGE_NAME} but success/failure not specified."
@@ -125,6 +128,10 @@ while (( timePassedS < ${DURATION} )); do
     # the other alternative, [[ "${_assessment}" == "${OVERRIDE_SUCCESS}" ]], occurs if a user
     # manually (outside the toochain) overrides behavior. In this case
 
+    # Read conditions
+    _succeeded=$(kubectl --namespace ${CLUSTER_NAMESPACE} \
+                get experiments.iter8.tools ${EXPERIMENT_NAME} \
+                --output jsonpath='{.status.conditions[?(@.type=="ExperimentSucceeded")].status}')
     # Read reason from experiment 
     _reason=$(kubectl --namespace ${CLUSTER_NAMESPACE} \
                 get experiments.iter8.tools ${EXPERIMENT_NAME} \
@@ -132,7 +139,7 @@ while (( timePassedS < ${DURATION} )); do
     echo "_reason=${_reason}"
 
     # Handle experiment FAILURE
-    if [[ "${phase}" == "${PHASE_FAILED}" ]]; then
+    if [[ "${_succeeded}" == "False" ]]; then
       # called from IMMEDIATE ROLLBACK
       if [[ -n ${FORCE_TERMINATION} ]] && [[ "${_assessment}" == "${OVERRIDE_FAILURE}" ]]; then
         log 'IMMEDIATE ROLLBACK called: experiment successfully rolled back'
@@ -168,7 +175,7 @@ while (( timePassedS < ${DURATION} )); do
       exit 0
     fi
 
-  fi # if [[ "${phase}" == "${PHASE_SUCCEEDED}" ]] || [[ "${phase}" == "${PHASE_FAILED}" ]]; then
+  fi # if [[ "${phase}" == "${PHASE_COMPLETED}" ]]; then
 
   timePassedS=$(( $(date +%s) - $startS ))
 done
