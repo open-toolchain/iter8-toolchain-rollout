@@ -278,7 +278,7 @@ spec:
     - name: check-istio-config
       taskRef:
         name: iks-deploy-to-kubernetes
-      runAfter: [git-clone]
+      runAfter: [vulnerability-advisor]
       params:
         - name: shuttle-properties-file
           value: "build.properties"
