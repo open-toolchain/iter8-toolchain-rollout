@@ -85,7 +85,7 @@ services:
                 "pr_pipeline_tekton.yml"
               }
             } else {
-              "pipeline.yml"
+              "pipeline_rollout.yml"
             }
         env:
           PIPELINE_REPO: pipeline-repo
@@ -131,7 +131,7 @@ services:
                 "pipeline_tekton.yml"
               }
             } else {
-              "pipeline.yml"
+              "pipeline_rollout.yml"
             }
         env:
           GIT_REPO: repo
