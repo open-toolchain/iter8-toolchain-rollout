@@ -17,6 +17,11 @@ template:
     ENABLE_IF_ELSE: true
     EXPRESSION_MAXLENGTH: 1000
   info:
+    #git url: >-
+    #  [https://github.com/open-toolchain/simple-helm-toolchain](https://github.com/open-toolchain/ab-testing-istio-toolchain)
+    #git branch: >-
+    #  [master](https://github.com/open-toolchain/ab-testing-istio-toolchain/tree/master)
+    #express the git url and branch values dynamically so that they will still be  correct after repo is forked
     git url: >
       "[" + $env.repository + "]" +
         "(" + $env.repository + ")"
@@ -196,7 +201,6 @@ form:
   pipeline:
     parameters:
       app-name: '{{services.repo.parameters.repo_name}}'
-      prod-cluster-namespace: >
-        $env.pipeline_type === 'tekton' ? 'default' : 'istio-prod'
+      prod-cluster-namespace: istio-prod
     schema:
       $ref: deploy.json
