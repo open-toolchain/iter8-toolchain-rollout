@@ -1,0 +1,72 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: iter8-roll-pipeline
+spec:
+  params:
+    - name: experiment-name
+      description: the experiment name
+    - name: operation
+    - name: dev-region
+    - name: dev-resource-group
+    - name: cluster-name
+      description: the name of the cluster to target
+    - name: dev-cluster-namespace
+      description: the namespace
+    - name: pipeline-debug
+      default: "0"
+  workspaces:
+    - name: pipeline-ws
+  tasks:
+    - name: immediate-rollforward
+      taskRef:
+        name: iks-deploy-to-kubernetes
+      params:
+        - name: cluster-region
+          value: $(params.dev-region)
+        - name: resource-group
+          value: $(params.dev-resource-group)
+        - name: cluster-name
+          value: $(params.cluster-name)
+        - name: setup-script
+          value: |
+            export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
+            export EXPERIMENT_NAME="$(params.experiment-name)"
+            export OPERATION="$(params.operation)"
+        - name: script
+          value: |
+            #!/bin/bash
+            # uncomment to debug the script
+            # set -x
+
+            if [ -z "$EXPERIMENT_NAME" ]; then
+              echo "No experiment provided. Exiting"
+              exit 1
+            fi
+
+            # Override experiment as successful or failure
+            # https://github.com/iter8-tools/docs/blob/v0.2.1/doc_files/iter8_crd.md#experiment-action-user-provided-action
+            if [ "$OPERATION" == "rollforward" ]; then
+              export IDS_STAGE_NAME="immediate-rollforward"
+              kubectl --namespace ${CLUSTER_NAMESPACE} \
+                patch experiment ${EXPERIMENT_NAME} \
+                --type=json -p '[{"op": "add", "path": "/action", "value": "override_success"}]' \
+              || true # don't fail when the experiment can't be found
+            else
+              export IDS_STAGE_NAME="immediate-rollback"
+              echo "Stop iter8 experiment if still running"
+              kubectl --namespace ${CLUSTER_NAMESPACE} \
+                patch experiment ${EXPERIMENT_NAME} \
+                --type=json -p '[{"op": "add", "path": "/action", "value": "override_failure"}]' \
+              || true # don't fail when the experiment can't be found
+            fi
+
+            # Wait for termination and delete baseline deployment
+            FORCE_TERMINATION=true
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/wait_complete.sh")
+        - name: pipeline-debug
+          value: $(params.pipeline-debug)
+      workspaces:
+        - name: artifacts
+          workspace: pipeline-ws
