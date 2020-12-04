@@ -196,7 +196,6 @@ form:
   pipeline:
     parameters:
       app-name: '{{services.repo.parameters.repo_name}}'
-      prod-cluster-namespace: >
-        $env.pipeline_type === 'tekton' ? 'default' : 'istio-prod'
+      prod-cluster-namespace: istio-prod
     schema:
       $ref: deploy.json
