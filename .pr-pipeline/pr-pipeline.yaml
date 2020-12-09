@@ -55,7 +55,7 @@ spec:
         - name: output
           workspace: pipeline-ws
     - name: unit-tests
-      runAfter: [docker-lint]
+      runAfter: [git-clone]
       taskRef:
         name: tester-run-tests
       params:
