@@ -36,6 +36,10 @@ inputs:
     branch: master
     service: ${TEKTON_CATALOG_REPO}
     path: cra
+  - type: git
+    branch: master
+    service: ${TEKTON_CATALOG_REPO}
+    path: tester
 triggers:
   - type: manual
     name: immediate-rollforward
