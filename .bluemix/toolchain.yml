@@ -12,10 +12,6 @@ template:
   required:
     - build_rollout
     - repo
-  $configuration:
-    ENABLE_EXTENSIONS: true
-    ENABLE_IF_ELSE: true
-    EXPRESSION_MAXLENGTH: 1000
   info:
     #git url: >-
     #  [https://github.com/open-toolchain/simple-helm-toolchain](https://github.com/open-toolchain/ab-testing-istio-toolchain)
