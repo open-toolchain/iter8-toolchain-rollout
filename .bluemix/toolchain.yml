@@ -1,5 +1,5 @@
 ---
-version: '2'
+version: '3'
 messages:
   $i18n: locales.yml
 template:
@@ -12,10 +12,6 @@ template:
   required:
     - build_rollout
     - repo
-  $configuration:
-    ENABLE_EXTENSIONS: true
-    ENABLE_IF_ELSE: true
-    EXPRESSION_MAXLENGTH: 1000
   info:
     #git url: >-
     #  [https://github.com/open-toolchain/simple-helm-toolchain](https://github.com/open-toolchain/ab-testing-istio-toolchain)
@@ -29,6 +25,8 @@ template:
       "[" + $env.branch + "]" +
         "(" + $env.repository +
           "/tree/" + $env.branch + ")"
+  wizard:
+    $ref: wizard.yml
 toolchain:
   name: 'candidate-rollout-toolchain-{{timestamp}}'
   template:
@@ -50,6 +48,7 @@ services:
       has_issues: true
       enable_traceability: true
       legal: true
+      source_provider: 'hostedgit'
   pipeline-repo:
     service_id: >
       $env.pipeline_type === 'tekton' ? $env.source_provider ? $env.source_provider : 'hostedgit' : ''
