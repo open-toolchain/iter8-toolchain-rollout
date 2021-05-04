@@ -57,7 +57,7 @@ services:
       repo_name: "iter8-toolchain-rollout-{{timestamp}}"
       repo_url: "https://github.com/open-toolchain/iter8-toolchain-rollout"
       source_repo_url: "https://github.com/open-toolchain/iter8-toolchain-rollout"
-      type: $env.type || 'clone'
+      type: 'clone'
       has_issues: false
       enable_traceability: false
       kind: ['pipeline']
