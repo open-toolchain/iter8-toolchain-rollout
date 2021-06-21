@@ -63,7 +63,10 @@ triggers:
   - type: manual
     name: manual-run
     eventListener: manual-run
-    properties: []
+    properties:
+      - name: branch
+        type: text
+        value: ${APP_REPO_BRANCH}
 properties:
   - type: secure
     name: toolchain-apikey
