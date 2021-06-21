@@ -243,10 +243,10 @@ spec:
             # copy the script below into your app code repo (e.g. ./scripts/istio_check_install.sh) and 'source' it from your pipeline job
             #    source ./scripts/istio_check_install.sh
             # alternatively, you can source it from online script:
-            #    source <(curl -sSL "(params.commons-hosted-region)/scripts/istio_check_install.sh")
+            #    source <(curl -sSL "$(params.commons-hosted-region)/scripts/istio_check_install.sh")
 
             # Check Istio installation in target cluster
-            source <(curl -sSL "(params.commons-hosted-region)/scripts/istio_check_install.sh")
+            source <(curl -sSL "$(params.commons-hosted-region)/scripts/istio_check_install.sh")
 
             # Prometheus and Grafana metrics add-on to Istio are not installed by default by the Istio add-on
             # https://cloud.ibm.com/docs/containers?topic=containers-istio-health#enable_optional_monitor
