@@ -43,11 +43,11 @@ services:
       repo_name: 'reviews-{{timestamp}}'
       repo_url: >
         $env.type === 'link' ?
-          $env.app_repo : $env.template.info.hosted_region !== "" ? 'https://{{template.info.hosted_region}}.git.cloud.ibm.com/huayuenh/bookinfoapp-reviews':
+          $env.app_repo : $env.template.info.hosted_region !== "" ? 'https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/bookinfoapp-reviews':
           'https://github.com/open-toolchain/bookinfoapp-reviews'
       source_repo_url: >
         $env.type === 'fork' || $env.type === 'clone' ?
-          $env.app_repo : $env.template.info.hosted_region !== "" ? 'https://{{template.info.hosted_region}}.git.cloud.ibm.com/huayuenh/bookinfoapp-reviews':
+          $env.app_repo : $env.template.info.hosted_region !== "" ? 'https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/bookinfoapp-reviews':
           'https://github.com/open-toolchain/bookinfoapp-reviews'
       type: $env.type || 'clone'
       has_issues: true
@@ -60,13 +60,13 @@ services:
       repo_name: "iter8-toolchain-rollout-{{timestamp}}"
       repo_url: >
         if ( $env.template.info.hosted_region !== "" ) {
-          "https://{{template.info.hosted_region}}.git.cloud.ibm.com/huayuenh/iter8-toolchain-rollout"
+          "https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/iter8-toolchain-rollout"
         } else {
           "https://github.com/open-toolchain/iter8-toolchain-rollout"
         }
       source_repo_url: >
         if ( $env.template.info.hosted_region !== "" ) {
-          "https://{{template.info.hosted_region}}.git.cloud.ibm.com/huayuenh/iter8-toolchain-rollout"
+          "https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/iter8-toolchain-rollout"
         } else {
           "https://github.com/open-toolchain/iter8-toolchain-rollout"
         }
@@ -81,13 +81,13 @@ services:
       repo_name: 'tekton-catalog-{{timestamp}}'
       repo_url: >
         if ( $env.template.info.hosted_region !== "" ) {
-          "https://{{template.info.hosted_region}}.git.cloud.ibm.com/huayuenh/tekton-catalog"
+          "https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/tekton-catalog"
         } else {
           "https://github.com/open-toolchain/tekton-catalog"
         }
       source_repo_url: >
         if ( $env.template.info.hosted_region !== "" ) {
-          "https://{{template.info.hosted_region}}.git.cloud.ibm.com/huayuenh/tekton-catalog"
+          "https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/tekton-catalog"
         } else {
           "https://github.com/open-toolchain/tekton-catalog"
         }
