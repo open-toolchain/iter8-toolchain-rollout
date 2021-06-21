@@ -38,6 +38,10 @@ spec:
     - name: grafana-dashboard-url
     - name: pipeline-debug
       default: "0"
+    - name: commons-hosted-region
+      default: "https://raw.githubusercontent.com/open-toolchain/commons/master"
+    - name: iter8
+      default: "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master"
   resourcetemplates:
     - apiVersion: v1
       kind: PersistentVolumeClaim
@@ -90,6 +94,10 @@ spec:
             value: $(params.grafana-dashboard-url)
           - name: pipeline-debug
             value: $(params.pipeline-debug)
+          - name: commons-hosted-region
+            value: $(params.commons-hosted-region)
+          - name: iter8
+            value: $(params.iter8)
         workspaces:
           - name: pipeline-ws
             persistentVolumeClaim:

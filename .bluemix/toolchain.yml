@@ -29,6 +29,7 @@ template:
       "[" + $env.branch + "]" +
         "(" + $env.repository +
           "/tree/" + $env.branch + ")"
+    hosted_region: ""
 toolchain:
   name: 'candidate-rollout-toolchain-{{timestamp}}'
   template:
@@ -42,10 +43,12 @@ services:
       repo_name: 'reviews-{{timestamp}}'
       repo_url: >
         $env.type === 'link' ?
-          $env.app_repo : 'https://github.com/open-toolchain/bookinfoapp-reviews'
+          $env.app_repo : $env.template.info.hosted_region !== "" ? 'https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/bookinfoapp-reviews':
+          'https://github.com/open-toolchain/bookinfoapp-reviews'
       source_repo_url: >
         $env.type === 'fork' || $env.type === 'clone' ?
-          $env.app_repo : 'https://github.com/open-toolchain/bookinfoapp-reviews'
+          $env.app_repo : $env.template.info.hosted_region !== "" ? 'https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/bookinfoapp-reviews':
+          'https://github.com/open-toolchain/bookinfoapp-reviews'
       type: $env.type || 'clone'
       has_issues: true
       enable_traceability: true
@@ -55,8 +58,18 @@ services:
       $env.pipeline_type !== 'tekton' ? '' : $env.source_provider ? $env.source_provider : 'hostedgit'
     parameters:
       repo_name: "iter8-toolchain-rollout-{{timestamp}}"
-      repo_url: "https://github.com/open-toolchain/iter8-toolchain-rollout"
-      source_repo_url: "https://github.com/open-toolchain/iter8-toolchain-rollout"
+      repo_url: >
+        if ( $env.template.info.hosted_region !== "" ) {
+          "https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/iter8-toolchain-rollout"
+        } else {
+          "https://github.com/open-toolchain/iter8-toolchain-rollout"
+        }
+      source_repo_url: >
+        if ( $env.template.info.hosted_region !== "" ) {
+          "https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/iter8-toolchain-rollout"
+        } else {
+          "https://github.com/open-toolchain/iter8-toolchain-rollout"
+        }
       type: 'clone'
       has_issues: false
       enable_traceability: false
@@ -66,8 +79,18 @@ services:
       $env.pipeline_type !== 'tekton' ? '' : $env.source_provider ? $env.source_provider : 'hostedgit'
     parameters:
       repo_name: 'tekton-catalog-{{timestamp}}'
-      repo_url: "https://github.com/open-toolchain/tekton-catalog"
-      source_repo_url: "https://github.com/open-toolchain/tekton-catalog"
+      repo_url: >
+        if ( $env.template.info.hosted_region !== "" ) {
+          "https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/tekton-catalog"
+        } else {
+          "https://github.com/open-toolchain/tekton-catalog"
+        }
+      source_repo_url: >
+        if ( $env.template.info.hosted_region !== "" ) {
+          "https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/tekton-catalog"
+        } else {
+          "https://github.com/open-toolchain/tekton-catalog"
+        }
       type: 'clone'
       has_issues: false
       enable_traceability: false
@@ -103,7 +126,8 @@ services:
           ARTIFACTORY_DOCKER_CONFIG_JSON: '{{form.artifactoryComp.parameters.docker_config_json}}'
           PRIVATE_WORKER: '{{services.privateWorker.parameters.name}}'
           PIPELINE_REPO_BRANCH: >
-            $env.branch ? $env.branch : "master"
+            $env.branch ? $env.branch : 
+            $env.template.info.hosted_region !== "" ? 'main': 'master'
           TEKTON_CATALOG_REPO: tekton-catalog-repo
           REGISTRY_REGION_ID: "{{form.pipeline.parameters.registry-region}}"
           REGISTRY_NAMESPACE: "{{form.pipeline.parameters.registry-namespace}}"
@@ -119,6 +143,16 @@ services:
             } else {
               'gitlab-pr-listener';
             }
+          COMMONS_HOSTED_REGION: >
+            $env.template.info.hosted_region !== "" ? 'https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/commons/-/raw/main':
+            'https://raw.githubusercontent.com/open-toolchain/commons/master'
+          ITER8: >
+            $env.template.info.hosted_region !== "" ? 'https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/iter8-toolchain-rollout/-/raw/main':
+            'https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master'
+          DEFINITIONS_BRANCH: >
+            $env.template.info.hosted_region !== "" ? 'main': 'master'
+          APP_REPO_BRANCH: >
+            $env.template.info.hosted_region !== "" ? 'main': 'master'
         execute: false
   build_rollout:
     service_id: pipeline
@@ -171,7 +205,8 @@ services:
             }
           PIPELINE_REPO: pipeline-repo
           PIPELINE_REPO_BRANCH: >
-            $env.branch ? $env.branch : "master"
+            $env.branch ? $env.branch : 
+            $env.template.info.hosted_region !== "" ? 'main': 'master'
           TEKTON_CATALOG_REPO: tekton-catalog-repo
           GIT_COMMIT_EVENT_LISTENER_NAME: >
             if ( $env.source_provider === 'githubconsolidated' ) {
@@ -185,6 +220,16 @@ services:
             } else {
               'grit-or-gitlab-commit';
             }
+          COMMONS_HOSTED_REGION: >
+            $env.template.info.hosted_region !== "" ? 'https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/commons/-/raw/main':
+            'https://raw.githubusercontent.com/open-toolchain/commons/master'
+          ITER8: >
+            $env.template.info.hosted_region !== "" ? 'https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/iter8-toolchain-rollout/-/raw/main':
+            'https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master'
+          DEFINITIONS_BRANCH: >
+            $env.template.info.hosted_region !== "" ? 'main': 'master'
+          APP_REPO_BRANCH: >
+            $env.template.info.hosted_region !== "" ? 'main': 'master'
         execute: >
           $env.pipeline_type === 'tekton' ? 'manual-run' : true
   devops-insights:

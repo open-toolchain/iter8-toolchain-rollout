@@ -16,6 +16,8 @@ spec:
       description: the namespace
     - name: pipeline-debug
       default: "0"
+    - name: iter8
+      default: "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master"
   workspaces:
     - name: pipeline-ws
   tasks:
@@ -64,7 +66,7 @@ spec:
 
             # Wait for termination and delete baseline deployment
             FORCE_TERMINATION=true
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/iter8-toolchain-rollout/master/scripts/wait_complete.sh")
+            source <(curl -sSL "$(params.iter8)/scripts/wait_complete.sh")
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
