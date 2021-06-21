@@ -345,7 +345,7 @@ spec:
             # copy the script below into your app code repo (e.g. ./scripts/istio_check_install.sh) and 'source' it from your pipeline job
             #    source ./scripts/istio_check_install.sh
             # alternatively, you can source it from online script:
-            #    source <(curl -sSL "(params.commons-hosted-region)/scripts/istio_check_install.sh")
+            #    source <(curl -sSL "$(params.commons-hosted-region)/scripts/istio_check_install.sh")
 
             # Check Istio installation in target cluster
             source <(curl -sSL "$(params.commons-hosted-region)/scripts/istio_check_install.sh")
@@ -554,12 +554,12 @@ spec:
             # copy the script below into your app code repo (e.g. ./scripts/check_predeploy.sh) and 'source' it from your pipeline job
             #    source ./scripts/check_predeploy_kubectl.sh
             # alternatively, you can source it from online script:
-            #    source <(curl -sSL "(params.commons-hosted-region)/check_predeploy_kubectl.sh")
+            #    source <(curl -sSL "$(params.commons-hosted-region)/check_predeploy_kubectl.sh")
 
             # Checks the cluster is ready, has a namespace configured with access to the private
             # image registry (using an IBM Cloud API Key). It also configures Helm Tiller service to later perform a deploy with Helm.
             touch ${DEPLOYMENT_FILE}
-            source <(curl -sSL "(params.commons-hosted-region)/scripts/check_predeploy_kubectl.sh")
+            source <(curl -sSL "$(params.commons-hosted-region)/scripts/check_predeploy_kubectl.sh")
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
@@ -598,10 +598,10 @@ spec:
             # copy the script below into your app code repo (e.g. ./scripts/deploy_kubectl.sh) and 'source' it from your pipeline job
             #    source ./scripts/deploy_kubectl.sh
             # alternatively, you can source it from online script:
-            #    source <(curl -sSL "(params.commons-hosted-region)/scripts/deploy_kubectl.sh")
+            #    source <(curl -sSL "$(params.commons-hosted-region)/scripts/deploy_kubectl.sh")
             # Create canary deployment yaml
             USE_ISTIO_GATEWAY=true
-            source <(curl -sSL "(params.commons-hosted-region)/scripts/deploy_kubectl.sh")
+            source <(curl -sSL "$(params.commons-hosted-region)/scripts/deploy_kubectl.sh")
             echo "Rollout Dashboard:"
             kubectl --namespace ${CLUSTER_NAMESPACE} get experiments.iter8.tools ${EXPERIMENT_NAME} --output jsonpath='{.status.grafanaURL}' || true
             echo ""
