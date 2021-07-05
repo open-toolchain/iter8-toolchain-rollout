@@ -47,6 +47,13 @@ spec:
       - name: details
         image: istio/examples-bookinfo-details-v1:1.8.0
         imagePullPolicy: IfNotPresent
+        resources:
+           limits:
+             memory: 32Mi
+             cpu: 125m
+           requests:
+             memory: 32Mi
+             cpu: 125m       
         ports:
         - containerPort: 9080
 ---
@@ -85,6 +92,13 @@ spec:
       - name: ratings
         image: istio/examples-bookinfo-ratings-v1:1.8.0
         imagePullPolicy: IfNotPresent
+        resources:
+           limits:
+             memory: 32Mi
+             cpu: 125m
+           requests:
+             memory: 32Mi
+             cpu: 125m 
         ports:
         - containerPort: 9080
 ---
@@ -139,6 +153,13 @@ spec:
       - name: productpage
         image: iter8/productpage:pp_30-rvv3_5
         imagePullPolicy: IfNotPresent
+        resources:
+           limits:
+             memory: 32Mi
+             cpu: 125m
+           requests:
+             memory: 32Mi
+             cpu: 125m 
         ports:
         - containerPort: 9080
 ---
