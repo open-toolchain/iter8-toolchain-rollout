@@ -1,4 +1,6 @@
-# Progressive microservice rollout in Kubernetes using **iter8**
+# This template has been deprecated and is no longer supported.
+
+## Progressive microservice rollout in Kubernetes using **iter8**
 
 This Devops process illustrates how to deploy a new version of an application using a progressive rollout. In particular, this process leverages iter8 to automatically re-configure Istio over time to gradually shift traffic from the current version to a candidate version. Iter8 compares metrics and error rates between the two versions, rolling back if they are not within specified tolerances.
 
